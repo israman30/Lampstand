@@ -24,6 +24,12 @@ enum NetworkError: Error, LocalizedError {
     }
 }
 
+protocol NetworkManagerProtocol {
+    func fetchVerses() async throws -> [Verse]
+}
+
+extension NetworkManager: NetworkManagerProtocol { }
+
 final class NetworkManager {
     private let url: URL
 
@@ -54,7 +60,10 @@ final class NetworkManager {
             return verses
         }
 
-        struct DataWrapper: Decodable { let data: [Verse] }
+        struct DataWrapper: Decodable {
+            let data: [Verse]
+        }
+        
         if let wrapper = try? decoder.decode(DataWrapper.self, from: data) {
             return wrapper.data
         }
