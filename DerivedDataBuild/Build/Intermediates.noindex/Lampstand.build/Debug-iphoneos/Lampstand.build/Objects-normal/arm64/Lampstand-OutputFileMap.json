@@ -1,0 +1,69 @@
+{
+  "" : {
+    "diagnostics" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Lampstand-primary.dia",
+    "emit-module-dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Lampstand-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Lampstand-primary-emit-module.dia",
+    "pch" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Lampstand-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Lampstand-primary.swiftdeps"
+  },
+  "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/ContentView.swift" : {
+    "const-values" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/LampstandApp.swift" : {
+    "const-values" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/LampstandApp.swiftconstvalues",
+    "dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/LampstandApp.d",
+    "diagnostics" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/LampstandApp.dia",
+    "index-unit-output-path" : "/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/LampstandApp.o",
+    "llvm-bc" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/LampstandApp.bc",
+    "object" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/LampstandApp.o",
+    "swift-dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/LampstandApp.swiftdeps",
+    "swiftmodule" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/LampstandApp~partial.swiftmodule"
+  },
+  "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/Model/Model.swift" : {
+    "const-values" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Model.swiftconstvalues",
+    "dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Model.d",
+    "diagnostics" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Model.dia",
+    "index-unit-output-path" : "/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Model.o",
+    "llvm-bc" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Model.bc",
+    "object" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Model.o",
+    "swift-dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Model.swiftdeps",
+    "swiftmodule" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/Model~partial.swiftmodule"
+  },
+  "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/NetworkManager/NetworkManager.swift" : {
+    "const-values" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/NetworkManager.swiftconstvalues",
+    "dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/NetworkManager.d",
+    "diagnostics" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/NetworkManager.dia",
+    "index-unit-output-path" : "/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/NetworkManager.o",
+    "llvm-bc" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/NetworkManager.bc",
+    "object" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/NetworkManager.o",
+    "swift-dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/NetworkManager.swiftdeps",
+    "swiftmodule" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/NetworkManager~partial.swiftmodule"
+  },
+  "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/ViewModel/BookViewModel.swift" : {
+    "const-values" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/BookViewModel.swiftconstvalues",
+    "dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/BookViewModel.d",
+    "diagnostics" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/BookViewModel.dia",
+    "index-unit-output-path" : "/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/BookViewModel.o",
+    "llvm-bc" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/BookViewModel.bc",
+    "object" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/BookViewModel.o",
+    "swift-dependencies" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/BookViewModel.swiftdeps",
+    "swiftmodule" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/Lampstand.build/Debug-iphoneos/Lampstand.build/Objects-normal/arm64/BookViewModel~partial.swiftmodule"
+  }
+}

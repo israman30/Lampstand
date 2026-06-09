@@ -1,0 +1,56 @@
+{
+  "source": "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Book + chapter (e.g. John 3)",
+        "location": {
+          "startingColumn": 58,
+          "startingLine": 41
+        }
+      },
+      {
+        "comment": "",
+        "key": "Try searching “John 3”.",
+        "location": {
+          "startingColumn": 96,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading…",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "Couldn’t load",
+        "location": {
+          "startingColumn": 44,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "No verses",
+        "location": {
+          "startingColumn": 44,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Verse %lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 30
+        }
+      }
+    ]
+  },
+  "version": 1
+}

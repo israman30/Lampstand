@@ -22,6 +22,8 @@ struct ContentView: View {
                     ProgressView("Loading…")
                 } else if let message = viewModel.errorMessage {
                     ContentUnavailableView("Couldn’t load", systemImage: "exclamationmark.triangle", description: Text(message))
+                } else if viewModel.verses.isEmpty {
+                    ContentUnavailableView("No verses", systemImage: "book", description: Text("Try searching “John 3”."))
                 } else {
                     List(viewModel.verses) { verse in
                         VStack(alignment: .leading, spacing: 6) {
@@ -34,8 +36,11 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle("Genesis 1")
+            .navigationTitle(viewModel.navigationTitle)
         }
+        .searchable(text: $viewModel.searchText, prompt: "Book + chapter (e.g. John 3)")
+        .textInputAutocapitalization(.words)
+        .autocorrectionDisabled()
         .task {
             await viewModel.fetchVerses()
         }

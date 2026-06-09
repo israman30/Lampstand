@@ -1,0 +1,73 @@
+{
+  "buildCommand" : {
+    "command" : "build",
+    "skipDependencies" : false,
+    "style" : "buildOnly"
+  },
+  "configuredTargets" : [
+    {
+      "guid" : "ba303be1aac67c0bca20909ddfd50716fca026a4cff88e24bdea348e40b6995a"
+    }
+  ],
+  "containerPath" : "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand.xcodeproj",
+  "continueBuildingAfterErrors" : false,
+  "dependencyScope" : "workspace",
+  "enableIndexBuildArena" : false,
+  "hideShellScriptEnvironment" : false,
+  "parameters" : {
+    "action" : "build",
+    "activeArchitecture" : "undefined_arch",
+    "activeRunDestination" : {
+      "disableOnlyActiveArch" : true,
+      "hostTargetedPlatform" : null,
+      "platform" : "iphoneos",
+      "sdk" : "iphoneos26.5",
+      "sdkVariant" : "iphoneos",
+      "supportedArchitectures" : [
+        "armv4t",
+        "armv5",
+        "armv6",
+        "armv7",
+        "armv7f",
+        "armv7s",
+        "armv7k",
+        "arm64",
+        "arm64e"
+      ],
+      "targetArchitecture" : "undefined_arch"
+    },
+    "arenaInfo" : {
+      "buildIntermediatesPath" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex",
+      "buildProductsPath" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Products",
+      "derivedDataPath" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild",
+      "indexDataStoreFolderPath" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Index.noindex/DataStore",
+      "indexEnableDataStore" : true,
+      "indexPCHPath" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Index.noindex/PrecompiledHeaders",
+      "pchPath" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/Intermediates.noindex/PrecompiledHeaders"
+    },
+    "configurationName" : "Debug",
+    "overrides" : {
+      "commandLine" : {
+        "table" : {
+
+        }
+      },
+      "synthesized" : {
+        "table" : {
+          "ACTION" : "build",
+          "CLANG_COVERAGE_MAPPING" : "YES",
+          "CLANG_PROFILE_DATA_DIRECTORY" : "/Users/israelmanzo/Documents/GitHub/Lampstand/DerivedDataBuild/Build/ProfileData",
+          "ENABLE_PREVIEWS" : "NO",
+          "ENABLE_XOJIT_PREVIEWS" : "YES",
+          "ONLY_ACTIVE_ARCH" : "YES"
+        }
+      }
+    }
+  },
+  "schemeCommand" : "launch",
+  "showNonLoggedProgress" : true,
+  "useDryRun" : false,
+  "useImplicitDependencies" : true,
+  "useLegacyBuildLocations" : false,
+  "useParallelTargets" : true
+}
