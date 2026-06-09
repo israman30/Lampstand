@@ -28,7 +28,8 @@ enum NetworkError: Error, LocalizedError {
 }
 
 protocol NetworkManagerProtocol {
-    func fetchVerses(book: String, chapter: Int) async throws -> [Verse]
+    func fetchChapter(book: String, chapter: Int, version: String) async throws -> [Verse]
+    func fetchVerse(book: String, chapter: Int, verse: Int, version: String) async throws -> Verse
 }
 
 extension NetworkManager: NetworkManagerProtocol { }
@@ -36,21 +37,40 @@ extension NetworkManager: NetworkManagerProtocol { }
 final class NetworkManager {
     private let baseURL: URL
 
-    init(baseURL: URL = URL(string: "https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-asv")!) {
+    init(baseURL: URL = URL(string: "https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles")!) {
         self.baseURL = baseURL
     }
 
-    func fetchVerses(book: String, chapter: Int) async throws -> [Verse] {
+    func fetchChapter(book: String, chapter: Int, version: String) async throws -> [Verse] {
+        let versionSlug = Self.slugify(version)
         let bookSlug = Self.slugify(book)
-        guard !bookSlug.isEmpty, chapter > 0 else { throw NetworkError.invalidURL }
+        guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0 else { throw NetworkError.invalidURL }
 
-        // Example:
-        // https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-asv/books/genesis/chapters/1.json
         let url = baseURL
+            .appendingPathComponent(versionSlug)
             .appendingPathComponent("books")
             .appendingPathComponent(bookSlug)
             .appendingPathComponent("chapters")
             .appendingPathComponent("\(chapter).json")
+
+        return try await decodeVerses(from: url)
+    }
+
+    func fetchVerse(book: String, chapter: Int, verse: Int, version: String) async throws -> Verse {
+        let versionSlug = Self.slugify(version)
+        let bookSlug = Self.slugify(book)
+        guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0, verse > 0 else { throw NetworkError.invalidURL }
+
+        // Example:
+        // https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-asv/books/genesis/chapters/1/verses/1.json
+        let url = baseURL
+            .appendingPathComponent(versionSlug)
+            .appendingPathComponent("books")
+            .appendingPathComponent(bookSlug)
+            .appendingPathComponent("chapters")
+            .appendingPathComponent("\(chapter)")
+            .appendingPathComponent("verses")
+            .appendingPathComponent("\(verse).json")
 
         let (data, response) = try await URLSession.shared.data(from: url)
 
@@ -63,8 +83,32 @@ final class NetworkManager {
 
         let decoder = JSONDecoder()
 
-        // Most common shape for this API:
-        // { ..., "verses": [ { "book": "...", "chapter": 1, "verse": 1, "text": "..." }, ... ] }
+        if let verse = try? decoder.decode(Verse.self, from: data) {
+            return verse
+        }
+
+        struct VerseWrapper: Decodable { let verse: Verse }
+        if let wrapper = try? decoder.decode(VerseWrapper.self, from: data) {
+            return wrapper.verse
+        }
+
+        throw NetworkError.unexpectedPayload
+    }
+
+    private func decodeVerses(from url: URL) async throws -> [Verse] {
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        guard let http = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        guard (200...299).contains(http.statusCode) else {
+            throw NetworkError.httpStatus(http.statusCode)
+        }
+
+        let decoder = JSONDecoder()
+
+        // Most common shape for chapters:
+        // { ..., "verses": [ { ... }, ... ] }
         if let chapterResponse = try? decoder.decode(ChapterResponse.self, from: data) {
             return chapterResponse.verses
         }
@@ -74,10 +118,7 @@ final class NetworkManager {
             return verses
         }
 
-        struct DataWrapper: Decodable {
-            let data: [Verse]
-        }
-        
+        struct DataWrapper: Decodable { let data: [Verse] }
         if let wrapper = try? decoder.decode(DataWrapper.self, from: data) {
             return wrapper.data
         }

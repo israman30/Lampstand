@@ -20,6 +20,7 @@ final class BookViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var searchText: String = ""
+    @Published var version: String = "en-asv"
     @Published private(set) var navigationTitle: String = "Genesis 1"
     
     private let networkManager: NetworkManagerProtocol
@@ -46,6 +47,19 @@ final class BookViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+
+        $version
+            .removeDuplicates()
+            .dropFirst()
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.activeSearchTask?.cancel()
+                self.activeSearchTask = Task { [weak self] in
+                    guard let self else { return }
+                    await self.fetchForQuery(self.searchText.trimmingCharacters(in: .whitespacesAndNewlines))
+                }
+            }
+            .store(in: &cancellables)
     }
     
     func fetchVerses() async {
@@ -63,15 +77,20 @@ final class BookViewModel: ObservableObject {
             return
         }
 
-        let title = "\(Self.prettyBookName(parsed.book)) \(parsed.chapter)"
-        await fetch(book: parsed.book, chapter: parsed.chapter, titleOverride: title)
+        if let verse = parsed.verse {
+            let title = "\(Self.prettyBookName(parsed.book)) \(parsed.chapter):\(verse)"
+            await fetch(book: parsed.book, chapter: parsed.chapter, verse: verse, titleOverride: title)
+        } else {
+            let title = "\(Self.prettyBookName(parsed.book)) \(parsed.chapter)"
+            await fetch(book: parsed.book, chapter: parsed.chapter, titleOverride: title)
+        }
     }
 
     private func fetch(book: String, chapter: Int, titleOverride: String) async {
         isLoading = true
         errorMessage = nil
         do {
-            let results = try await networkManager.fetchVerses(book: book, chapter: chapter)
+            let results = try await networkManager.fetchChapter(book: book, chapter: chapter, version: version)
             verses = results
             navigationTitle = results.first?.book.map { "\($0) \(chapter)" } ?? titleOverride
         } catch {
@@ -82,7 +101,26 @@ final class BookViewModel: ObservableObject {
         isLoading = false
     }
 
-    private static func parseBookAndChapter(from query: String) -> (book: String, chapter: Int)? {
+    private func fetch(book: String, chapter: Int, verse: Int, titleOverride: String) async {
+        isLoading = true
+        errorMessage = nil
+        do {
+            let result = try await networkManager.fetchVerse(book: book, chapter: chapter, verse: verse, version: version)
+            verses = [result]
+            if let bookName = result.book {
+                navigationTitle = "\(bookName) \(chapter):\(verse)"
+            } else {
+                navigationTitle = titleOverride
+            }
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            verses = []
+            navigationTitle = titleOverride
+        }
+        isLoading = false
+    }
+
+    private static func parseBookAndChapter(from query: String) -> (book: String, chapter: Int, verse: Int?)? {
         let cleaned = query
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: ",", with: " ")
@@ -92,15 +130,25 @@ final class BookViewModel: ObservableObject {
         let parts = cleaned.split(whereSeparator: \.isWhitespace).map(String.init)
         guard parts.count >= 2 else { return nil }
 
-        // Accept "John 3", "1 John 3", and "John 3:16" (chapter=3).
+        // Accept "John 3", "1 John 3", and "John 3:16".
         let last = parts.last ?? ""
-        let chapterToken = last.split(separator: ":").first.map(String.init) ?? last
-        guard let chapter = Int(chapterToken), chapter > 0 else { return nil }
+        let tokens = last.split(separator: ":", omittingEmptySubsequences: false).map(String.init)
+
+        guard let chapterToken = tokens.first,
+              let chapter = Int(chapterToken),
+              chapter > 0 else { return nil }
+
+        var verse: Int?
+        if tokens.count >= 2 {
+            let verseToken = tokens[1]
+            guard !verseToken.isEmpty, let v = Int(verseToken), v > 0 else { return nil }
+            verse = v
+        }
 
         let book = parts.dropLast().joined(separator: " ")
         guard !book.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
 
-        return (book: book, chapter: chapter)
+        return (book: book, chapter: chapter, verse: verse)
     }
 
     private static func prettyBookName(_ book: String) -> String {

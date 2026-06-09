@@ -10,6 +10,7 @@ import Combine
 
 struct ContentView: View {
     @StateObject private var viewModel: BookViewModel
+    private let versions = ["en-asv", "en-kjv"]
 
     init() {
         self._viewModel = StateObject(wrappedValue: BookViewModel(networkManager: NetworkManager()))
@@ -23,7 +24,7 @@ struct ContentView: View {
                 } else if let message = viewModel.errorMessage {
                     ContentUnavailableView("Couldn’t load", systemImage: "exclamationmark.triangle", description: Text(message))
                 } else if viewModel.verses.isEmpty {
-                    ContentUnavailableView("No verses", systemImage: "book", description: Text("Try searching “John 3”."))
+                    ContentUnavailableView("No verses", systemImage: "book", description: Text("Try “John 3” or “John 3:16”."))
                 } else {
                     List(viewModel.verses) { verse in
                         VStack(alignment: .leading, spacing: 6) {
@@ -37,6 +38,21 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(viewModel.navigationTitle)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Picker("Version", selection: $viewModel.version) {
+                            ForEach(versions, id: \.self) { v in
+                                Text(v.uppercased())
+                                    .tag(v)
+                            }
+                        }
+                    } label: {
+                        Text(viewModel.version.uppercased())
+                            .font(.subheadline)
+                    }
+                }
+            }
         }
         .searchable(text: $viewModel.searchText, prompt: "Book + chapter (e.g. John 3)")
         .textInputAutocapitalization(.words)

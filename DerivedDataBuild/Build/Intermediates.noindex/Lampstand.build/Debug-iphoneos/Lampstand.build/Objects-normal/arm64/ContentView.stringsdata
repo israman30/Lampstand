@@ -7,15 +7,15 @@
         "key": "Book + chapter (e.g. John 3)",
         "location": {
           "startingColumn": 58,
-          "startingLine": 41
+          "startingLine": 56
         }
       },
       {
         "comment": "",
-        "key": "Try searching “John 3”.",
+        "key": "Try “John 3” or “John 3:16”.",
         "location": {
           "startingColumn": 96,
-          "startingLine": 26
+          "startingLine": 27
         }
       },
       {
@@ -23,7 +23,7 @@
         "key": "Loading…",
         "location": {
           "startingColumn": 34,
-          "startingLine": 22
+          "startingLine": 23
         }
       },
       {
@@ -31,7 +31,7 @@
         "key": "Couldn’t load",
         "location": {
           "startingColumn": 44,
-          "startingLine": 24
+          "startingLine": 25
         }
       },
       {
@@ -39,7 +39,7 @@
         "key": "No verses",
         "location": {
           "startingColumn": 44,
-          "startingLine": 26
+          "startingLine": 27
         }
       },
       {
@@ -47,7 +47,15 @@
         "key": "Verse %lld",
         "location": {
           "startingColumn": 34,
-          "startingLine": 30
+          "startingLine": 31
+        }
+      },
+      {
+        "comment": "",
+        "key": "Version",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 44
         }
       }
     ]
