@@ -6,6 +6,7 @@
 // https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-asv/books/genesis/chapters/1.json
 
 import SwiftUI
+import Combine
 
 struct BookList: Decodable {
     var data: [Book]
@@ -26,15 +27,40 @@ final class NetworkManager {
     }
 }
 
+class BookViewModel: ObservableObject {
+    @Published var books: [Book] = []
+    
+    private let networkManager: NetworkManager
+    
+    init(networkManager: NetworkManager) {
+        self.networkManager = networkManager
+    }
+    
+    func fetchBooks() async {
+        do {
+            let books = try await networkManager.fetchData()
+            self.books = books
+        } catch {
+            print("Something went wrong: \(error)")
+        }
+    }
+}
+
 struct ContentView: View {
+    @StateObject var viewModel: BookViewModel
+    init() {
+        self._viewModel = StateObject(wrappedValue: BookViewModel(networkManager: NetworkManager()))
+    }
     var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("\(viewModel.books.count)")
         }
-        .padding()
+        .task {
+            await viewModel.fetchBooks()
+        }
     }
 }
 
