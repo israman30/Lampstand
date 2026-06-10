@@ -19,9 +19,13 @@ struct ContentView: View {
         NavigationStack {
             List {
                 Section("Search") {
-                    TextField("Book (e.g. John, 1 John)", text: $viewModel.bookText)
-                        .textInputAutocapitalization(.words)
-                        .autocorrectionDisabled()
+                    Picker("Book", selection: $viewModel.bookText) {
+                        Text("Select a book").tag("")
+                        ForEach(viewModel.availableBooks, id: \.self) { book in
+                            Text(book).tag(book)
+                        }
+                    }
+                    .pickerStyle(.menu)
 
                     TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
                         .keyboardType(.numberPad)
