@@ -39,14 +39,7 @@ struct BibleView: View {
                         ContentUnavailableView("Couldn’t load chapter", systemImage: "exclamationmark.triangle", description: Text(message))
                     } else {
                         ForEach(viewModel.verses) { verse in
-                            HStack(alignment: .top) {
-                                Text("\(verse.verse)")
-                                    .font(.title3)
-                                    .foregroundStyle(.secondary)
-                                Text(verse.text)
-                                    .font(.body)
-                            }
-                            .padding(.vertical, 4)
+                            VerseRow(verseNumber: verse.verse, text: verse.text)
                         }
                     }
                 }
@@ -77,6 +70,25 @@ struct BibleView: View {
         .onChange(of: viewModel.version) { _, _ in
             viewModel.fetchSelectedChapter()
         }
+    }
+}
+
+private struct VerseRow: View {
+    let verseNumber: Int
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text("\(verseNumber)")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .frame(minWidth: 22, alignment: .trailing)
+
+            Text(text)
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.vertical, 4)
     }
 }
 
