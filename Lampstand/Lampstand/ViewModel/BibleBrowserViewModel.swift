@@ -73,7 +73,7 @@ final class BibleBrowserViewModel: ObservableObject {
     }
 
     func goToPreviousChapter() {
-        guard let book = selectedBook else { return }
+        guard selectedBook != nil else { return }
         guard selectedChapter > 1 else { return }
         selectedChapter = max(1, selectedChapter - 1)
         fetchSelectedChapter()

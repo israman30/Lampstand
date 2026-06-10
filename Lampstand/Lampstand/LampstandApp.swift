@@ -11,7 +11,7 @@ import SwiftUI
 struct LampstandApp: App {
     var body: some Scene {
         WindowGroup {
-            BibleView()
+            ContentView()
         }
     }
 }
