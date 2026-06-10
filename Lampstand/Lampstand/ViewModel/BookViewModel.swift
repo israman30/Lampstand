@@ -19,32 +19,67 @@ final class BookViewModel: ObservableObject {
     @Published var verses: [Verse] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
-    @Published var searchText: String = ""
+    @Published var bookText: String = ""
+    @Published var chapterText: String = ""
+    @Published var verseText: String = ""
     @Published var version: String = "en-asv"
-    @Published private(set) var navigationTitle: String = "Genesis 1"
+    @Published private(set) var navigationTitle: String = "Lampstand"
     
     private let networkManager: NetworkManagerProtocol
     private var cancellables = Set<AnyCancellable>()
-    private var activeSearchTask: Task<Void, Never>?
-
-    private let defaultBook = "genesis"
-    private let defaultChapter = 1
+    private var activeFetchTask: Task<Void, Never>?
     
     init(networkManager: NetworkManagerProtocol) {
         self.networkManager = networkManager
 
-        $searchText
+        $bookText
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .removeDuplicates()
-            .debounce(for: .milliseconds(350), scheduler: RunLoop.main)
-            .dropFirst()
-            .sink { [weak self] text in
+            .sink { [weak self] _ in
                 guard let self else { return }
-                self.activeSearchTask?.cancel()
-                self.activeSearchTask = Task { [weak self] in
-                    guard let self else { return }
-                    await self.fetchForQuery(text)
+                self.activeFetchTask?.cancel()
+                self.chapterText = ""
+                self.verseText = ""
+                self.verses = []
+                self.errorMessage = nil
+                self.isLoading = false
+                self.navigationTitle = "Lampstand"
+            }
+            .store(in: &cancellables)
+
+        $chapterText
+            .map(Self.sanitizeNumberText(_:))
+            .removeDuplicates()
+            .sink { [weak self] sanitized in
+                guard let self else { return }
+                if self.chapterText != sanitized {
+                    self.chapterText = sanitized
+                    return
                 }
+
+                self.activeFetchTask?.cancel()
+                self.verseText = ""
+                self.verses = []
+                self.errorMessage = nil
+                self.isLoading = false
+            }
+            .store(in: &cancellables)
+
+        $verseText
+            .map(Self.sanitizeNumberText(_:))
+            .removeDuplicates()
+            .debounce(for: .milliseconds(350), scheduler: RunLoop.main)
+            .sink { [weak self] sanitized in
+                guard let self else { return }
+                if self.verseText != sanitized {
+                    self.verseText = sanitized
+                    return
+                }
+
+                self.errorMessage = nil
+                self.verses = []
+                self.isLoading = false
+                self.triggerFetchIfPossible()
             }
             .store(in: &cancellables)
 
@@ -53,52 +88,29 @@ final class BookViewModel: ObservableObject {
             .dropFirst()
             .sink { [weak self] _ in
                 guard let self else { return }
-                self.activeSearchTask?.cancel()
-                self.activeSearchTask = Task { [weak self] in
-                    guard let self else { return }
-                    await self.fetchForQuery(self.searchText.trimmingCharacters(in: .whitespacesAndNewlines))
-                }
+                self.triggerFetchIfPossible()
             }
             .store(in: &cancellables)
     }
     
     func fetchVerses() async {
-        await fetch(book: defaultBook, chapter: defaultChapter, titleOverride: "Genesis 1")
+        // Intentionally no-op. The main view now waits for the user to provide
+        // Book + Chapter + Verse before fetching.
     }
 
-    private func fetchForQuery(_ query: String) async {
-        if query.isEmpty {
-            await fetch(book: defaultBook, chapter: defaultChapter, titleOverride: "Genesis 1")
-            return
-        }
+    private func triggerFetchIfPossible() {
+        activeFetchTask?.cancel()
 
-        guard let parsed = Self.parseBookAndChapter(from: query) else {
-            // Don’t spam errors while the user is typing partial input.
-            return
-        }
+        let book = bookText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !book.isEmpty else { return }
+        guard let chapter = Int(chapterText), chapter > 0 else { return }
+        guard let verse = Int(verseText), verse > 0 else { return }
 
-        if let verse = parsed.verse {
-            let title = "\(Self.prettyBookName(parsed.book)) \(parsed.chapter):\(verse)"
-            await fetch(book: parsed.book, chapter: parsed.chapter, verse: verse, titleOverride: title)
-        } else {
-            let title = "\(Self.prettyBookName(parsed.book)) \(parsed.chapter)"
-            await fetch(book: parsed.book, chapter: parsed.chapter, titleOverride: title)
+        let titleOverride = "\(Self.prettyBookName(book)) \(chapter):\(verse)"
+        activeFetchTask = Task { [weak self] in
+            guard let self else { return }
+            await self.fetch(book: book, chapter: chapter, verse: verse, titleOverride: titleOverride)
         }
-    }
-
-    private func fetch(book: String, chapter: Int, titleOverride: String) async {
-        isLoading = true
-        errorMessage = nil
-        do {
-            let results = try await networkManager.fetchChapter(book: book, chapter: chapter, version: version)
-            verses = results
-            navigationTitle = results.first?.book.map { "\($0) \(chapter)" } ?? titleOverride
-        } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-            verses = []
-            navigationTitle = titleOverride
-        }
-        isLoading = false
     }
 
     private func fetch(book: String, chapter: Int, verse: Int, titleOverride: String) async {
@@ -120,35 +132,46 @@ final class BookViewModel: ObservableObject {
         isLoading = false
     }
 
-    private static func parseBookAndChapter(from query: String) -> (book: String, chapter: Int, verse: Int?)? {
-        let cleaned = query
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: ",", with: " ")
+    var displayedVerse: Verse? { verses.first }
 
-        guard !cleaned.isEmpty else { return nil }
-
-        let parts = cleaned.split(whereSeparator: \.isWhitespace).map(String.init)
-        guard parts.count >= 2 else { return nil }
-
-        // Accept "John 3", "1 John 3", and "John 3:16".
-        let last = parts.last ?? ""
-        let tokens = last.split(separator: ":", omittingEmptySubsequences: false).map(String.init)
-
-        guard let chapterToken = tokens.first,
-              let chapter = Int(chapterToken),
-              chapter > 0 else { return nil }
-
-        var verse: Int?
-        if tokens.count >= 2 {
-            let verseToken = tokens[1]
-            guard !verseToken.isEmpty, let v = Int(verseToken), v > 0 else { return nil }
-            verse = v
+    var placeholderTitle: String {
+        if bookText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "Enter a book"
         }
+        if Int(chapterText) == nil {
+            return "Enter a chapter"
+        }
+        if Int(verseText) == nil {
+            return "Enter a verse"
+        }
+        return "Searching…"
+    }
 
-        let book = parts.dropLast().joined(separator: " ")
-        guard !book.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+    var placeholderMessage: String {
+        if bookText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "Start with a book name, like “John”."
+        }
+        if Int(chapterText) == nil {
+            return "Now enter a chapter number, like “3”."
+        }
+        if Int(verseText) == nil {
+            return "Now enter a verse number, like “16”."
+        }
+        return "If nothing appears, check spelling or try a different version."
+    }
 
-        return (book: book, chapter: chapter, verse: verse)
+    var chapterEnabled: Bool {
+        !bookText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var verseEnabled: Bool {
+        chapterEnabled && (Int(chapterText) ?? 0) > 0
+    }
+
+    private static func sanitizeNumberText(_ input: String) -> String {
+        let digits = input.filter(\.isNumber)
+        // Prevent ridiculously long inputs.
+        return String(digits.prefix(4))
     }
 
     private static func prettyBookName(_ book: String) -> String {

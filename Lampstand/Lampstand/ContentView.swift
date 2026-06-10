@@ -6,7 +6,6 @@
 // https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-asv/books/genesis/chapters/1.json
 
 import SwiftUI
-import Combine
 
 struct ContentView: View {
     @StateObject private var viewModel: BookViewModel
@@ -18,15 +17,30 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.isLoading {
-                    ProgressView("Loading…")
-                } else if let message = viewModel.errorMessage {
-                    ContentUnavailableView("Couldn’t load", systemImage: "exclamationmark.triangle", description: Text(message))
-                } else if viewModel.verses.isEmpty {
-                    ContentUnavailableView("No verses", systemImage: "book", description: Text("Try “John 3” or “John 3:16”."))
-                } else {
-                    List(viewModel.verses) { verse in
+            List {
+                Section("Search") {
+                    TextField("Book (e.g. John, 1 John)", text: $viewModel.bookText)
+                        .textInputAutocapitalization(.words)
+                        .autocorrectionDisabled()
+
+                    TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
+                        .keyboardType(.numberPad)
+                        .disabled(!viewModel.chapterEnabled)
+
+                    TextField("Verse (e.g. 16)", text: $viewModel.verseText)
+                        .keyboardType(.numberPad)
+                        .disabled(!viewModel.verseEnabled)
+                }
+
+                Section("Result") {
+                    if viewModel.isLoading {
+                        HStack(spacing: 12) {
+                            ProgressView()
+                            Text("Searching…")
+                        }
+                    } else if let message = viewModel.errorMessage {
+                        ContentUnavailableView("Couldn’t load", systemImage: "exclamationmark.triangle", description: Text(message))
+                    } else if let verse = viewModel.displayedVerse {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Verse \(verse.verse)")
                                 .font(.headline)
@@ -34,6 +48,12 @@ struct ContentView: View {
                                 .font(.body)
                         }
                         .padding(.vertical, 4)
+                    } else {
+                        ContentUnavailableView(
+                            viewModel.placeholderTitle,
+                            systemImage: "magnifyingglass",
+                            description: Text(viewModel.placeholderMessage)
+                        )
                     }
                 }
             }
@@ -53,12 +73,6 @@ struct ContentView: View {
                     }
                 }
             }
-        }
-        .searchable(text: $viewModel.searchText, prompt: "Book + chapter (e.g. John 3)")
-        .textInputAutocapitalization(.words)
-        .autocorrectionDisabled()
-        .task {
-            await viewModel.fetchVerses()
         }
     }
 }

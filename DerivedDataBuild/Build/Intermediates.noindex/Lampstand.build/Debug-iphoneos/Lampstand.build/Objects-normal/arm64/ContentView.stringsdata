@@ -4,42 +4,58 @@
     "Localizable": [
       {
         "comment": "",
-        "key": "Book + chapter (e.g. John 3)",
+        "key": "Search",
         "location": {
-          "startingColumn": 58,
-          "startingLine": 56
+          "startingColumn": 25,
+          "startingLine": 21
         }
       },
       {
         "comment": "",
-        "key": "Try “John 3” or “John 3:16”.",
+        "key": "Result",
         "location": {
-          "startingColumn": 96,
-          "startingLine": 27
+          "startingColumn": 25,
+          "startingLine": 35
         }
       },
       {
         "comment": "",
-        "key": "Loading…",
+        "key": "Book (e.g. John, 1 John)",
         "location": {
-          "startingColumn": 34,
-          "startingLine": 23
+          "startingColumn": 31,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "Chapter (e.g. 3)",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Verse (e.g. 16)",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 30
         }
       },
       {
         "comment": "",
         "key": "Couldn’t load",
         "location": {
-          "startingColumn": 44,
-          "startingLine": 25
+          "startingColumn": 48,
+          "startingLine": 42
         }
       },
       {
         "comment": "",
-        "key": "No verses",
+        "key": "Searching…",
         "location": {
-          "startingColumn": 44,
-          "startingLine": 27
+          "startingColumn": 34,
+          "startingLine": 39
         }
       },
       {
@@ -47,7 +63,7 @@
         "key": "Verse %lld",
         "location": {
           "startingColumn": 34,
-          "startingLine": 31
+          "startingLine": 45
         }
       },
       {
@@ -55,7 +71,7 @@
         "key": "Version",
         "location": {
           "startingColumn": 32,
-          "startingLine": 44
+          "startingLine": 64
         }
       }
     ]
