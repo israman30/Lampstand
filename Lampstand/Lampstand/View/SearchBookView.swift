@@ -1,20 +1,20 @@
 //
-//  ContentView.swift
+//  SearchBookView.swift
 //  Lampstand
 //
 //  Created by Israel Manzo on 6/9/26.
-// https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-asv/books/genesis/chapters/1.json
+//
 
 import SwiftUI
 
-struct ContentView: View {
+struct SearchBookView: View {
     @StateObject private var viewModel: BookViewModel
     private let versions = ["en-asv", "en-kjv"]
 
     init() {
         self._viewModel = StateObject(wrappedValue: BookViewModel(networkManager: NetworkManager()))
     }
-
+    
     var body: some View {
         NavigationStack {
             List {
@@ -81,10 +81,6 @@ struct ContentView: View {
     }
 }
 
-#if DEBUG
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+    SearchBookView()
 }
-#endif
