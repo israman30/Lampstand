@@ -81,6 +81,10 @@ struct SearchBookView: View {
     }
 }
 
-#Preview {
-    SearchBookView()
+#if DEBUG
+struct SearchBookView_Previews: PreviewProvider {
+    static var previews: some View {
+        SearchBookView()
+    }
 }
+#endif

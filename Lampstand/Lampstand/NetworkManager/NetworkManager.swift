@@ -29,6 +29,7 @@ enum NetworkError: Error, LocalizedError {
 
 protocol NetworkManagerProtocol {
     func fetchChapter(book: String, chapter: Int, version: String) async throws -> [Verse]
+    func fetchChapterPage(book: String, chapter: Int, totalChapters: Int, version: String) async throws -> ChapterPage
     func fetchVerse(book: String, chapter: Int, verse: Int, version: String) async throws -> Verse
 }
 
@@ -54,6 +55,16 @@ final class NetworkManager {
             .appendingPathComponent("\(chapter).json")
 
         return try await decodeVerses(from: url)
+    }
+
+    func fetchChapterPage(book: String, chapter: Int, totalChapters: Int, version: String) async throws -> ChapterPage {
+        guard totalChapters > 0, (1...totalChapters).contains(chapter) else { throw NetworkError.invalidURL }
+
+        let verses = try await fetchChapter(book: book, chapter: chapter, version: version)
+        let previous = (chapter > 1) ? (chapter - 1) : nil
+        let next = (chapter < totalChapters) ? (chapter + 1) : nil
+
+        return ChapterPage(book: book, chapter: chapter, verses: verses, previousChapter: previous, nextChapter: next)
     }
 
     func fetchVerse(book: String, chapter: Int, verse: Int, version: String) async throws -> Verse {

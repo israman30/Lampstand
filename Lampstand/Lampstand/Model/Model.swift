@@ -7,6 +7,14 @@
 
 import Foundation
 
+struct ChapterPage {
+    let book: String
+    let chapter: Int
+    let verses: [Verse]
+    let previousChapter: Int?
+    let nextChapter: Int?
+}
+
 struct ChapterResponse: Decodable {
     let verses: [Verse]
 }
