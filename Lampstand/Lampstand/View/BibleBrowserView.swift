@@ -23,9 +23,7 @@ struct BibleBrowserView: View {
             ScrollViewReader { proxy in
                 List {
                     Section {
-                        Picker(
-                            "Book",
-                            selection: Binding(
+                        Picker("Book", selection: Binding(
                                 get: { viewModel.selectedBookId },
                                 set: { viewModel.userSelectedBook(id: $0) }
                             )
