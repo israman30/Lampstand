@@ -20,10 +20,12 @@ final class BibleBrowserViewModel: ObservableObject {
     @Published var version: String = "en-asv"
 
     private let networkManager: NetworkManagerProtocol
+    private let verseStore: VerseStoreProtocol
     private var activeFetchTask: Task<Void, Never>?
 
-    init(networkManager: NetworkManagerProtocol) {
+    init(networkManager: NetworkManagerProtocol, verseStore: VerseStoreProtocol? = nil) {
         self.networkManager = networkManager
+        self.verseStore = verseStore ?? CoreDataVerseStore.shared
     }
 
     var selectedBook: BibleBook? {
@@ -90,17 +92,27 @@ final class BibleBrowserViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
+        let cached = await verseStore.fetchChapter(book: book.name, chapter: chapter, version: version)
+        if !cached.isEmpty, !Task.isCancelled {
+            verses = cached
+        }
+
         do {
+            guard !Task.isCancelled else { return }
             let page = try await networkManager.fetchChapterPage(
                 book: book.name,
                 chapter: chapter,
                 totalChapters: book.chapterCount,
                 version: version
             )
+            guard !Task.isCancelled else { return }
             verses = page.verses
+            await verseStore.upsert(verses: page.verses, bookFallback: book.name, chapter: chapter, version: version)
         } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-            verses = []
+            if cached.isEmpty {
+                errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                verses = []
+            }
         }
     }
 

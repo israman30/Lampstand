@@ -346,6 +346,7 @@ extern "C" {
 #if __has_warning("-Watimport-in-framework-header")
 #pragma clang diagnostic ignored "-Watimport-in-framework-header"
 #endif
+@import CoreData;
 #endif
 
 #endif // defined(__OBJC__)
@@ -367,6 +368,22 @@ extern "C" {
 #endif
 
 #if defined(__OBJC__)
+
+@class NSString;
+@class NSDate;
+@class NSEntityDescription;
+@class NSManagedObjectContext;
+SWIFT_CLASS_NAMED("CachedVerse")
+@interface CachedVerse : NSManagedObject
+@property (nonatomic, copy) NSString * _Nonnull key;
+@property (nonatomic, copy) NSString * _Nullable book;
+@property (nonatomic) int16_t chapter;
+@property (nonatomic) int16_t verse;
+@property (nonatomic, copy) NSString * _Nonnull version;
+@property (nonatomic, copy) NSString * _Nonnull text;
+@property (nonatomic, copy) NSDate * _Nonnull fetchedAt;
+- (nonnull instancetype)initWithEntity:(NSEntityDescription * _Nonnull)entity insertIntoManagedObjectContext:(NSManagedObjectContext * _Nullable)context OBJC_DESIGNATED_INITIALIZER;
+@end
 
 #endif // defined(__OBJC__)
 #if __has_attribute(external_source_symbol)

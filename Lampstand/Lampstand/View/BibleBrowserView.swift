@@ -34,12 +34,7 @@ struct BibleBrowserView: View {
                 }
 
                 Section("Chapter") {
-                    if viewModel.isLoading {
-                        HStack(spacing: 12) {
-                            ProgressView()
-                            Text("Loading chapter…")
-                        }
-                    } else if viewModel.selectedBook == nil {
+                    if viewModel.selectedBook == nil {
                         ContentUnavailableView(
                             "Select a book",
                             systemImage: "book",
@@ -71,7 +66,9 @@ struct BibleBrowserView: View {
                                 ProgressView()
                                 Text("Loading chapter…")
                             }
-                        } else if let message = viewModel.errorMessage {
+                        }
+
+                        if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
                             ContentUnavailableView("Couldn’t load chapter", systemImage: "exclamationmark.triangle", description: Text(message))
                         } else {
                             ForEach(viewModel.verses) { verse in

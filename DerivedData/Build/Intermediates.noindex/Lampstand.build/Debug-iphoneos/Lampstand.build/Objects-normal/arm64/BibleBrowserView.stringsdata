@@ -1,0 +1,112 @@
+{
+  "source": "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/View/BibleBrowserView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Books",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 21
+        }
+      },
+      {
+        "comment": "",
+        "key": "Chapter",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld chapters",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 30
+        }
+      },
+      {
+        "comment": "",
+        "key": "Book",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "Pick a book from the menu to start reading.",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 41
+        }
+      },
+      {
+        "comment": "",
+        "key": "Select a book",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 39
+        }
+      },
+      {
+        "comment": "",
+        "key": "Couldn’t load chapter",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "Chapter %lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 52
+        }
+      },
+      {
+        "comment": "",
+        "key": "Prev",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "Next",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading chapter…",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "Version",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 86
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 116
+        }
+      }
+    ]
+  },
+  "version": 1
+}

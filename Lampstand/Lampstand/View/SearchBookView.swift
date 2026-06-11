@@ -42,7 +42,9 @@ struct SearchBookView: View {
                             ProgressView()
                             Text("Searching…")
                         }
-                    } else if let message = viewModel.errorMessage {
+                    }
+
+                    if let message = viewModel.errorMessage, viewModel.displayedVerse == nil {
                         ContentUnavailableView("Couldn’t load", systemImage: "exclamationmark.triangle", description: Text(message))
                     } else if let verse = viewModel.displayedVerse {
                         VStack(alignment: .leading, spacing: 6) {
