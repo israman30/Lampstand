@@ -18,22 +18,22 @@ struct BibleBrowserView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Books") {
+                Section {
                     Picker("Book", selection: $viewModel.selectedBookId) {
                         ForEach(viewModel.availableBooks) { book in
                             Text(book.name).tag(book.id)
                         }
                     }
                     .pickerStyle(.menu)
-
+                } footer: {
                     if let selected = viewModel.selectedBook {
                         Text("\(selected.chapterCount) chapters")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.primary)
                     }
                 }
 
-                Section("Chapter") {
+                Section {
                     if viewModel.selectedBook == nil {
                         ContentUnavailableView(
                             "Select a book",
@@ -114,7 +114,7 @@ private struct VerseRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text("\(verseNumber)")
-                .font(.body.weight(.semibold))
+                .font(.callout.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .frame(minWidth: 22, alignment: .trailing)
 
@@ -122,7 +122,7 @@ private struct VerseRow: View {
                 .font(.body)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 0.5)
     }
 }
 
