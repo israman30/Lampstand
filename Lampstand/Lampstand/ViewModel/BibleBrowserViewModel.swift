@@ -46,9 +46,31 @@ final class BibleBrowserViewModel: ObservableObject {
         return "\(book.name) \(selectedChapter)"
     }
 
-    func selectBook(id: Int) {
+    /// User-driven selection from the book picker.
+    func userSelectedBook(id: Int) {
+        guard selectedBookId != id else { return }
         selectedBookId = id
         selectedChapter = 1
+        verses = []
+        errorMessage = nil
+        fetchSelectedChapter()
+    }
+
+    /// User-driven selection from the version picker.
+    func userSelectedVersion(_ newVersion: String) {
+        guard version != newVersion else { return }
+        version = newVersion
+        fetchSelectedChapter()
+    }
+
+    /// Programmatic navigation (e.g. from `SearchBookView`) without forcing chapter 1.
+    func navigateTo(bookName: String, chapter: Int, version: String) {
+        if let book = BibleBookCatalog.all.first(where: { $0.name.caseInsensitiveCompare(bookName) == .orderedSame }) {
+            selectedBookId = book.id
+        }
+
+        selectedChapter = max(1, chapter)
+        self.version = version
         verses = []
         errorMessage = nil
         fetchSelectedChapter()
