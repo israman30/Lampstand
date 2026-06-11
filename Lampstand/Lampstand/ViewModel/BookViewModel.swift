@@ -26,11 +26,13 @@ final class BookViewModel: ObservableObject {
     @Published private(set) var navigationTitle: String = "Lampstand"
     
     private let networkManager: NetworkManagerProtocol
+    private let verseStore: VerseStoreProtocol
     private var cancellables = Set<AnyCancellable>()
     private var activeFetchTask: Task<Void, Never>?
     
-    init(networkManager: NetworkManagerProtocol) {
+    init(networkManager: NetworkManagerProtocol, verseStore: VerseStoreProtocol? = nil) {
         self.networkManager = networkManager
+        self.verseStore = verseStore ?? CoreDataVerseStore.shared
 
         $bookText
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -117,21 +119,34 @@ final class BookViewModel: ObservableObject {
 
     private func fetch(book: String, chapter: Int, verse: Int, titleOverride: String) async {
         isLoading = true
+        defer { isLoading = false }
         errorMessage = nil
+
+        let cachedVerse = await verseStore.fetchVerse(book: book, chapter: chapter, verse: verse, version: version)
+        if let cachedVerse, !Task.isCancelled {
+            verses = [cachedVerse]
+            navigationTitle = "\(cachedVerse.book ?? book) \(chapter):\(verse)"
+        }
+
         do {
+            guard !Task.isCancelled else { return }
             let result = try await networkManager.fetchVerse(book: book, chapter: chapter, verse: verse, version: version)
+            guard !Task.isCancelled else { return }
             verses = [result]
             if let bookName = result.book {
                 navigationTitle = "\(bookName) \(chapter):\(verse)"
             } else {
                 navigationTitle = titleOverride
             }
+
+            await verseStore.upsert(verse: result, bookFallback: book, version: version)
         } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-            verses = []
-            navigationTitle = titleOverride
+            if cachedVerse == nil {
+                errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                verses = []
+                navigationTitle = titleOverride
+            }
         }
-        isLoading = false
     }
 
     var displayedVerse: Verse? { verses.first }

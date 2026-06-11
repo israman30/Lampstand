@@ -1,40 +1,5 @@
 {
-  "source": "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/ContentView.swift",
-  "tables": {
-    "Localizable": [
-      {
-        "comment": "",
-        "key": "Genesis 1",
-        "location": {
-          "startingColumn": 30,
-          "startingLine": 165
-        }
-      },
-      {
-        "comment": "",
-        "key": "Loading…",
-        "location": {
-          "startingColumn": 34,
-          "startingLine": 150
-        }
-      },
-      {
-        "comment": "",
-        "key": "Couldn’t load",
-        "location": {
-          "startingColumn": 44,
-          "startingLine": 152
-        }
-      },
-      {
-        "comment": "",
-        "key": "Verse %lld",
-        "location": {
-          "startingColumn": 34,
-          "startingLine": 156
-        }
-      }
-    ]
-  },
+  "source": "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/View/ContentView.swift",
+  "tables": {},
   "version": 1
 }

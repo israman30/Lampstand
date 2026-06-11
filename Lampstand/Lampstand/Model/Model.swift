@@ -138,3 +138,12 @@ struct Verse: Decodable, Identifiable {
         text = (try? container.decode(String.self, forKey: .text)) ?? ""
     }
 }
+
+extension Verse {
+    init(book: String?, chapter: Int, verse: Int, text: String) {
+        self.book = book
+        self.chapter = chapter
+        self.verse = verse
+        self.text = text
+    }
+}
