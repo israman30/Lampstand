@@ -17,8 +17,10 @@ extension BibleBrowserViewModel: BibleBrowserViewProtocol { }
 
 @MainActor
 final class BibleBrowserViewModel: ObservableObject {
+    // Public inputs: these are driven by UI controls (pickers/buttons) and represent the user's intent.
     @Published var selectedBookId: Int = BibleBookCatalog.all.first?.id ?? 1
 
+    // Rendered outputs: the view reads these to present content/loading/error states.
     @Published private(set) var verses: [Verse] = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
@@ -28,6 +30,7 @@ final class BibleBrowserViewModel: ObservableObject {
 
     private let networkManager: NetworkManagerProtocol
     private let verseStore: VerseStoreProtocol
+    // Cancelling in-flight work ensures "latest navigation wins" when the user taps quickly or changes inputs.
     private var activeFetchTask: Task<Void, Never>?
 
     init(networkManager: NetworkManagerProtocol, verseStore: VerseStoreProtocol? = nil) {
@@ -92,6 +95,7 @@ final class BibleBrowserViewModel: ObservableObject {
             return
         }
 
+        // Defensive: keep chapter within the selected book's bounds even if inputs were set programmatically.
         selectedChapter = clamp(selectedChapter, to: 1...max(1, book.chapterCount))
 
         let chapter = selectedChapter
@@ -121,6 +125,8 @@ final class BibleBrowserViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
+        // Cache-first: show any previously saved verses immediately to keep navigation feeling instant,
+        // then refresh from the network in the background.
         let cached = await verseStore.fetchChapter(book: book.name, chapter: chapter, version: version)
         if !cached.isEmpty, !Task.isCancelled {
             verses = cached
@@ -138,6 +144,7 @@ final class BibleBrowserViewModel: ObservableObject {
             verses = page.verses
             await verseStore.upsert(verses: page.verses, bookFallback: book.name, chapter: chapter, version: version)
         } catch {
+            // Only show an error if we have nothing to render; if cache exists, we keep it and fail silently.
             if cached.isEmpty {
                 errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
                 verses = []

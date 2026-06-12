@@ -132,11 +132,13 @@ struct BibleBrowserView: View {
                         guard let target = pendingScrollToVerse else { return }
                         pendingScrollToVerse = nil
                         highlightedVerse = target
+                        // The list needs a beat to lay out new rows before ScrollViewReader can reliably scroll to them.
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                             withAnimation(.easeInOut) {
                                 proxy.scrollTo(target, anchor: .top)
                             }
                         }
+                        // Highlight is intentionally temporary—enough to orient the user, without staying “stuck on.”
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                             if highlightedVerse == target {
                                 highlightedVerse = nil
