@@ -13,6 +13,7 @@ struct BibleBrowserView: View {
     @State private var isShowingSearch = false
     @State private var pendingScrollToVerse: Int?
     @State private var highlightedVerse: Int?
+    @AppStorage("lampstand.appearance") private var appearanceRawValue: String = LampstandAppearance.system.rawValue
 
     init() {
         self._viewModel = StateObject(wrappedValue: BibleBrowserViewModel(networkManager: NetworkManager()))
@@ -20,89 +21,122 @@ struct BibleBrowserView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollViewReader { proxy in
-                List {
-                    Section {
-                        Picker("Book", selection: Binding(
-                                get: { viewModel.selectedBookId },
-                                set: { viewModel.userSelectedBook(id: $0) }
-                            )
-                        ) {
-                            ForEach(viewModel.availableBooks) { book in
-                                Text(book.name).tag(book.id)
+            ZStack {
+                LinearGradient(
+                    colors: [
+                        LampstandTheme.Palette.parchment,
+                        LampstandTheme.Palette.parchmentTint
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                ScrollViewReader { proxy in
+                    List {
+                        Section {
+                            Picker("Book", selection: Binding(
+                                    get: { viewModel.selectedBookId },
+                                    set: { viewModel.userSelectedBook(id: $0) }
+                                )
+                            ) {
+                                ForEach(viewModel.availableBooks) { book in
+                                    Text(book.name)
+                                        .font(LampstandTheme.Typography.bodyEmphasis)
+                                        .foregroundStyle(LampstandTheme.Palette.ink)
+                                        .tag(book.id)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                        } footer: {
+                            if let selected = viewModel.selectedBook {
+                                Text("\(selected.chapterCount) chapters")
+                                    .font(LampstandTheme.Typography.caption)
+                                    .foregroundStyle(LampstandTheme.Palette.inkSecondary)
                             }
                         }
-                        .pickerStyle(.menu)
-                    } footer: {
-                        if let selected = viewModel.selectedBook {
-                            Text("\(selected.chapterCount) chapters")
-                                .font(.caption)
-                                .foregroundStyle(.primary)
-                        }
-                    }
 
-                    Section {
-                        if viewModel.selectedBook == nil {
-                            ContentUnavailableView(
-                                "Select a book",
-                                systemImage: "book",
-                                description: Text("Pick a book from the menu to start reading.")
-                            )
-                        } else {
-                            HStack(spacing: 12) {
-                                Button("Prev") {
-                                    viewModel.goToPreviousChapter()
-                                }
-                                .disabled(viewModel.selectedChapter <= viewModel.chapterRange.lowerBound)
-
-                                Spacer()
-
-                                Text("Chapter \(viewModel.selectedChapter)")
-                                    .font(.headline)
-
-                                Spacer()
-
-                                Button("Next") {
-                                    viewModel.goToNextChapter()
-                                }
-                                .disabled(viewModel.selectedChapter >= viewModel.chapterRange.upperBound)
-                            }
-                            .buttonStyle(.bordered)
-
-                            if viewModel.isLoading {
-                                HStack(spacing: 12) {
-                                    ProgressView()
-                                    Text("Loading chapter…")
-                                }
-                            }
-
-                            if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
-                                ContentUnavailableView("Couldn’t load chapter", systemImage: "exclamationmark.triangle", description: Text(message))
+                        Section {
+                            if viewModel.selectedBook == nil {
+                                ContentUnavailableView(
+                                    "Select a book",
+                                    systemImage: "book",
+                                    description: Text("Pick a book from the menu to start reading.")
+                                )
                             } else {
-                                ForEach(viewModel.verses) { verse in
-                                    VerseRow(
-                                        verseNumber: verse.verse,
-                                        text: verse.text,
-                                        isHighlighted: highlightedVerse == verse.verse
-                                    )
-                                    .id(verse.verse)
+                                HStack(spacing: 12) {
+                                    Button {
+                                        viewModel.goToPreviousChapter()
+                                    } label: {
+                                        Label("Previous", systemImage: "chevron.left")
+                                            .labelStyle(.iconOnly)
+                                            .imageScale(.medium)
+                                    }
+                                    .disabled(viewModel.selectedChapter <= viewModel.chapterRange.lowerBound)
+
+                                    Spacer()
+
+                                    Text("Chapter \(viewModel.selectedChapter)")
+                                        .font(LampstandTheme.Typography.title)
+                                        .foregroundStyle(LampstandTheme.Palette.ink)
+
+                                    Spacer()
+
+                                    Button {
+                                        viewModel.goToNextChapter()
+                                    } label: {
+                                        Label("Next", systemImage: "chevron.right")
+                                            .labelStyle(.iconOnly)
+                                            .imageScale(.medium)
+                                    }
+                                    .disabled(viewModel.selectedChapter >= viewModel.chapterRange.upperBound)
+                                }
+                                .buttonStyle(.borderedProminent)
+
+                                if viewModel.isLoading {
+                                    HStack(spacing: 12) {
+                                        ProgressView()
+                                        Text("Loading chapter…")
+                                            .font(LampstandTheme.Typography.body)
+                                            .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+                                    }
+                                }
+
+                                if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
+                                    ContentUnavailableView("Couldn’t load chapter", systemImage: "exclamationmark.triangle", description: Text(message))
+                                } else {
+                                    ForEach(viewModel.verses) { verse in
+                                        VerseRow(
+                                            verseNumber: verse.verse,
+                                            text: verse.text,
+                                            isHighlighted: highlightedVerse == verse.verse
+                                        )
+                                        .id(verse.verse)
+                                        .listRowInsets(
+                                            EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+                                        )
+                                        .listRowBackground(Color.clear)
+                                        .listRowSeparator(.hidden)
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                .onChange(of: viewModel.verses.count) { _, _ in
-                    guard let target = pendingScrollToVerse else { return }
-                    pendingScrollToVerse = nil
-                    highlightedVerse = target
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                        withAnimation(.easeInOut) {
-                            proxy.scrollTo(target, anchor: .top)
+                    .listStyle(.insetGrouped)
+                    .scrollContentBackground(.hidden)
+                    .onChange(of: viewModel.verses.count) { _, _ in
+                        guard let target = pendingScrollToVerse else { return }
+                        pendingScrollToVerse = nil
+                        highlightedVerse = target
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                            withAnimation(.easeInOut) {
+                                proxy.scrollTo(target, anchor: .top)
+                            }
                         }
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                        if highlightedVerse == target {
-                            highlightedVerse = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            if highlightedVerse == target {
+                                highlightedVerse = nil
+                            }
                         }
                     }
                 }
@@ -132,12 +166,22 @@ struct BibleBrowserView: View {
                                 Text(v.uppercased()).tag(v)
                             }
                         }
+
+                        Divider()
+
+                        Picker("Appearance", selection: $appearanceRawValue) {
+                            ForEach(LampstandAppearance.allCases) { option in
+                                Label(option.title, systemImage: option.systemImage)
+                                    .tag(option.rawValue)
+                            }
+                        }
                     } label: {
-                        Text(viewModel.version.uppercased())
-                            .font(.subheadline)
+                        Image(systemName: "slider.horizontal.3")
                     }
                 }
             }
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(LampstandTheme.Palette.parchment, for: .navigationBar)
         }
         .task {
             viewModel.fetchSelectedChapter()
@@ -164,20 +208,21 @@ private struct VerseRow: View {
     let isHighlighted: Bool
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text("\(verseNumber)")
-                .font(.callout.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .frame(minWidth: 22, alignment: .trailing)
+                .font(LampstandTheme.Typography.verseNumber)
+                .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Capsule().fill(LampstandTheme.Palette.stroke.opacity(0.9)))
 
             Text(text)
-                .font(.body)
+                .font(LampstandTheme.Typography.body)
+                .foregroundStyle(LampstandTheme.Palette.ink)
+                .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.vertical, 0.5)
-        .padding(.horizontal, 2)
-        .background(isHighlighted ? Color.yellow.opacity(0.18) : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .lampstandCard(isHighlighted: isHighlighted)
     }
 }
 
