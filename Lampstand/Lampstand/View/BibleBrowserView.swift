@@ -13,10 +13,14 @@ struct BibleBrowserView: View {
     @State private var isShowingSearch = false
     @State private var pendingScrollToVerse: Int?
     @State private var highlightedVerse: Int?
-    @AppStorage("lampstand.appearance") private var appearanceRawValue: String = LampstandAppearance.system.rawValue
+    
+    @AppStorage("lampstand.appearance")
+    private var appearanceRawValue: String = LampstandAppearance.system.rawValue
 
     init() {
-        self._viewModel = StateObject(wrappedValue: BibleBrowserViewModel(networkManager: NetworkManager()))
+        self._viewModel = StateObject(
+            wrappedValue: BibleBrowserViewModel(networkManager: NetworkManager())
+        )
     }
 
     var body: some View {

@@ -12,7 +12,8 @@ struct SearchBookView: View {
     @StateObject private var viewModel: BookViewModel
     private let versions = ["en-asv", "en-kjv"]
     private let onOpenInReader: (_ book: String, _ chapter: Int, _ verse: Int, _ version: String) -> Void
-    @AppStorage("lampstand.appearance") private var appearanceRawValue: String = LampstandAppearance.system.rawValue
+    @AppStorage("lampstand.appearance")
+    private var appearanceRawValue: String = LampstandAppearance.system.rawValue
 
     init(
         initialBook: String = "",
@@ -35,7 +36,10 @@ struct SearchBookView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [LampstandTheme.Palette.parchment, LampstandTheme.Palette.parchmentTint],
+                colors: [
+                    LampstandTheme.Palette.parchment,
+                    LampstandTheme.Palette.parchmentTint
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -71,7 +75,11 @@ struct SearchBookView: View {
                     }
 
                     if let message = viewModel.errorMessage, viewModel.displayedVerse == nil {
-                        ContentUnavailableView("Couldn’t load", systemImage: "exclamationmark.triangle", description: Text(message))
+                        ContentUnavailableView(
+                            "Couldn’t load",
+                            systemImage: "exclamationmark.triangle",
+                            description: Text(message)
+                        )
                     } else if let verse = viewModel.displayedVerse {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
@@ -116,7 +124,9 @@ struct SearchBookView: View {
         .navigationTitle(viewModel.navigationTitle)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Close") { dismiss() }
+                Button("Close") {
+                    dismiss()
+                }
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -150,7 +160,12 @@ struct SearchBookView: View {
 struct SearchBookView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            SearchBookView(initialBook: "John", initialChapter: 3, initialVerse: 16, initialVersion: "en-asv")
+            SearchBookView(
+                initialBook: "John",
+                initialChapter: 3,
+                initialVerse: 16,
+                initialVersion: "en-asv"
+            )
         }
     }
 }

@@ -8,6 +8,13 @@
 import Foundation
 import Combine
 
+protocol BibleBrowserViewProtocol {
+    func userSelectedBook(id: Int)
+    func userSelectedVersion(_ newVersion: String)
+}
+
+extension BibleBrowserViewModel: BibleBrowserViewProtocol { }
+
 @MainActor
 final class BibleBrowserViewModel: ObservableObject {
     @Published var selectedBookId: Int = BibleBookCatalog.all.first?.id ?? 1
