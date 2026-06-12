@@ -113,7 +113,7 @@ struct BibleBrowserView: View {
                                         )
                                         .id(verse.verse)
                                         .listRowInsets(
-                                            EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+                                            EdgeInsets(top: 6, leading: 5, bottom: 6, trailing: 5)
                                         )
                                         .listRowBackground(Color.clear)
                                         .listRowSeparator(.hidden)
