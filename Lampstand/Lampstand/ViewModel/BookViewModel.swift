@@ -28,6 +28,8 @@ final class BookViewModel: ObservableObject {
     private let networkManager: NetworkManagerProtocol
     private let verseStore: VerseStoreProtocol
     private var cancellables = Set<AnyCancellable>()
+    // We cancel in-flight work on any input change to avoid racing updates (e.g., the user types “1”, then “16”)
+    // and to ensure only the latest (book, chapter, verse, version) selection can win.
     private var activeFetchTask: Task<Void, Never>?
     
     init(networkManager: NetworkManagerProtocol, verseStore: VerseStoreProtocol? = nil) {
@@ -70,6 +72,7 @@ final class BookViewModel: ObservableObject {
         $verseText
             .map(Self.sanitizeNumberText(_:))
             .removeDuplicates()
+            // Small debounce keeps the UI responsive while preventing a network request per keystroke.
             .debounce(for: .milliseconds(350), scheduler: RunLoop.main)
             .sink { [weak self] sanitized in
                 guard let self else { return }
@@ -111,6 +114,8 @@ final class BookViewModel: ObservableObject {
         guard let verse = Int(verseText), verse > 0 else { return }
 
         let titleOverride = "\(Self.prettyBookName(book)) \(chapter):\(verse)"
+        // Task cancellation is our “latest request wins” strategy, which also keeps cached vs. network updates
+        // from stomping on each other when inputs change quickly.
         activeFetchTask = Task { [weak self] in
             guard let self else { return }
             await self.fetch(book: book, chapter: chapter, verse: verse, titleOverride: titleOverride)

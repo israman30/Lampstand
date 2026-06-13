@@ -20,6 +20,7 @@ enum NetworkError: Error, LocalizedError {
         case .httpStatus(let code):
             return "Request failed with status code \(code)."
         case .unexpectedPayload:
+            // We successfully reached the endpoint, but the JSON shape isn't one we know how to decode.
             return "Unexpected JSON payload."
         case .invalidURL:
             return "Invalid request URL."
@@ -28,8 +29,15 @@ enum NetworkError: Error, LocalizedError {
 }
 
 protocol NetworkManagerProtocol {
+    /// Fetches a chapter's verses from the static JSON endpoint.
+    /// - Note: This API is backed by a CDN-hosted GitHub repo, so payload shapes can vary by file/version.
     func fetchChapter(book: String, chapter: Int, version: String) async throws -> [Verse]
+
+    /// Convenience helper used by the reader UI to include prev/next chapter hints.
     func fetchChapterPage(book: String, chapter: Int, totalChapters: Int, version: String) async throws -> ChapterPage
+
+    /// Fetches a single verse.
+    /// - Note: Some verse endpoints return either a raw `Verse` object or a small wrapper object.
     func fetchVerse(book: String, chapter: Int, verse: Int, version: String) async throws -> Verse
 }
 
@@ -38,6 +46,8 @@ extension NetworkManager: NetworkManagerProtocol { }
 final class NetworkManager {
     private let baseURL: URL
 
+    /// Base path for the Bible API JSON files.
+    /// - Important: These are static JSON files served via jsDelivr, not a traditional REST service.
     init(baseURL: URL = URL(string: "https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles")!) {
         self.baseURL = baseURL
     }
@@ -45,6 +55,7 @@ final class NetworkManager {
     func fetchChapter(book: String, chapter: Int, version: String) async throws -> [Verse] {
         let versionSlug = Self.slugify(version)
         let bookSlug = Self.slugify(book)
+        // Guard early so we never generate malformed URLs like ".../books//chapters/0.json".
         guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0 else { throw NetworkError.invalidURL }
 
         let url = baseURL
@@ -83,6 +94,7 @@ final class NetworkManager {
             .appendingPathComponent("verses")
             .appendingPathComponent("\(verse).json")
 
+        // We use `URLSession.shared` (no auth/cookies) since the content is public, cache-friendly JSON.
         let (data, response) = try await URLSession.shared.data(from: url)
 
         guard let http = response as? HTTPURLResponse else {
@@ -94,6 +106,9 @@ final class NetworkManager {
 
         let decoder = JSONDecoder()
 
+        // The upstream repo isn't fully consistent across files:
+        // - Sometimes the response is a plain `Verse`
+        // - Sometimes it's wrapped (e.g., { "verse": { ... } })
         if let verse = try? decoder.decode(Verse.self, from: data) {
             return verse
         }
@@ -124,7 +139,8 @@ final class NetworkManager {
             return chapterResponse.verses
         }
 
-        // Fallback shapes (some endpoints return an array, or wrap under a "data" key, etc.)
+        // Fallback shapes: the dataset may evolve or differ by version/file, so we support a couple of
+        // common alternatives to avoid breaking reading/search when a single JSON file differs.
         if let verses = try? decoder.decode([Verse].self, from: data) {
             return verses
         }
@@ -144,7 +160,10 @@ final class NetworkManager {
 
         guard !lower.isEmpty else { return "" }
 
-        // Keep alphanumerics, turn everything else into single dashes.
+        // The upstream file paths are kebab-case-ish. This keeps URLs predictable for inputs like:
+        // - "1 Samuel" -> "1-samuel"
+        // - "Song of Solomon" -> "song-of-solomon"
+        // It’s intentionally conservative: anything non-alphanumeric becomes a single "-".
         let allowed = CharacterSet.alphanumerics
         var scalars: [UnicodeScalar] = []
         scalars.reserveCapacity(lower.unicodeScalars.count)
