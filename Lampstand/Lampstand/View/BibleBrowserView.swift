@@ -168,8 +168,9 @@ struct BibleBrowserView: View {
                                 set: { viewModel.userSelectedVersion($0) }
                             )
                         ) {
-                            ForEach(versions, id: \.self) { v in
-                                Text(v.uppercased()).tag(v)
+                            ForEach(versions, id: \.self) { version in
+                                Text(version.uppercased())
+                                    .tag(version)
                             }
                         }
 

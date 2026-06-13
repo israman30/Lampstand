@@ -24,12 +24,12 @@ struct SearchBookView: View {
         verseStore: VerseStoreProtocol? = nil,
         onOpenInReader: @escaping (_ book: String, _ chapter: Int, _ verse: Int, _ version: String) -> Void = { _, _, _, _ in }
     ) {
-        let vm = BookViewModel(networkManager: networkManager, verseStore: verseStore)
-        vm.bookText = initialBook
-        vm.chapterText = initialChapter > 0 ? String(initialChapter) : ""
-        vm.verseText = initialVerse.map(String.init) ?? ""
-        vm.version = initialVersion
-        self._viewModel = StateObject(wrappedValue: vm)
+        let viewModel = BookViewModel(networkManager: networkManager, verseStore: verseStore)
+        viewModel.bookText = initialBook
+        viewModel.chapterText = initialChapter > 0 ? String(initialChapter) : ""
+        viewModel.verseText = initialVerse.map(String.init) ?? ""
+        viewModel.version = initialVersion
+        self._viewModel = StateObject(wrappedValue: viewModel)
         self.onOpenInReader = onOpenInReader
     }
     

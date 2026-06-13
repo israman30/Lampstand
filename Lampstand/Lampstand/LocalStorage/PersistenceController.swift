@@ -7,6 +7,20 @@
 
 import CoreData
 
+enum PersistenceControllerError: Error, LocalizedError {
+    case persistentStoreLoadFailed(underlying: Error)
+    case invalidStoreConfiguration(reason: String)
+
+    var errorDescription: String? {
+        switch self {
+        case .persistentStoreLoadFailed(let underlying):
+            return "Failed to load the Core Data persistent store. \(underlying.localizedDescription)"
+        case .invalidStoreConfiguration(let reason):
+            return "Invalid Core Data store configuration. \(reason)"
+        }
+    }
+}
+
 final class PersistenceController {
     static let shared = PersistenceController()
 
@@ -25,7 +39,8 @@ final class PersistenceController {
 
         container.loadPersistentStores { _, error in
             if let error {
-                fatalError("Unresolved Core Data error: \(error)")
+                let wrapped = PersistenceControllerError.persistentStoreLoadFailed(underlying: error)
+                fatalError(wrapped.localizedDescription)
             }
         }
 
