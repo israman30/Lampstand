@@ -1,0 +1,112 @@
+{
+  "source": "/Users/israelmanzo/Documents/GitHub/Lampstand/Lampstand/Lampstand/View/SearchBookView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Search",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 49
+        }
+      },
+      {
+        "comment": "",
+        "key": "Result",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "Book",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 50
+        }
+      },
+      {
+        "comment": "",
+        "key": "Chapter (e.g. 3)",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "Verse (e.g. 16)",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 62
+        }
+      },
+      {
+        "comment": "",
+        "key": "Select a book",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "Couldn’t load",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 79
+        }
+      },
+      {
+        "comment": "",
+        "key": "Searching…",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ %lld:%lld",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open in Reader",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 114
+        }
+      },
+      {
+        "comment": "",
+        "key": "Close",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "Version",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 134
+        }
+      },
+      {
+        "comment": "",
+        "key": "Appearance",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 143
+        }
+      }
+    ]
+  },
+  "version": 1
+}
