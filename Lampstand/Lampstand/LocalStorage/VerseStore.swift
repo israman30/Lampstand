@@ -17,18 +17,23 @@ protocol VerseStoreProtocol {
 final class CoreDataVerseStore: VerseStoreProtocol {
     static let shared = CoreDataVerseStore(persistence: .shared)
 
+    /// We keep reads and writes on separate contexts:
+    /// - Reads use `viewContext` to align with UI-driven consumption and benefit from automatic merging.
+    /// - Writes use a background context to avoid blocking the main thread during upserts.
     private let readContext: NSManagedObjectContext
     private let writeContext: NSManagedObjectContext
 
     init(persistence: PersistenceController) {
         self.readContext = persistence.container.viewContext
         self.writeContext = persistence.container.newBackgroundContext()
+        // When we "refresh" a verse/chapter, we want the newest network payload to win over anything already cached.
         self.writeContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
     }
 
     func fetchVerse(book: String, chapter: Int, verse: Int, version: String) async -> Verse? {
         let book = book.trimmingCharacters(in: .whitespacesAndNewlines)
         let version = version.trimmingCharacters(in: .whitespacesAndNewlines)
+        // A stable key lets us treat a verse as a single logical row even if other metadata changes over time.
         let key = Self.makeKey(book: book, chapter: chapter, verse: verse, version: version)
 
         return await readContext.perform {
@@ -57,7 +62,10 @@ final class CoreDataVerseStore: VerseStoreProtocol {
             let request = CachedVerse.fetchRequest()
             request.predicate = NSPredicate(format: "book == %@ AND chapter == %d AND version == %@", book, chapter, version)
             request.sortDescriptors = [
+                // The reader expects canonical verse order.
                 NSSortDescriptor(key: "verse", ascending: true),
+                // If duplicates ever exist (e.g. after a migration or a transient write failure),
+                // we prefer the most recently fetched value.
                 NSSortDescriptor(key: "fetchedAt", ascending: false)
             ]
 
@@ -93,6 +101,7 @@ final class CoreDataVerseStore: VerseStoreProtocol {
                 let verseNumber = verse.verse
                 let key = Self.makeKey(book: book, chapter: chapter, verse: verseNumber, version: version)
 
+                // Reuse existing objects when possible to keep updates small and avoid churn in the store.
                 let object = byVerse[verseNumber] ?? CachedVerse(context: self.writeContext)
                 object.key = key
                 object.book = verse.book ?? book
