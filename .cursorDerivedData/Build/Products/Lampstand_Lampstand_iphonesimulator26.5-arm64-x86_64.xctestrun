@@ -63,6 +63,7 @@
 			</array>
 			<key>SourceFiles</key>
 			<array>
+				<string>BibleBrowserViewModelTests.swift</string>
 				<string>LampstandTests.swift</string>
 				<string>NetworkManagerProtocolTests.swift</string>
 			</array>
