@@ -1,0 +1,6 @@
+Target dependency graph (3 targets)
+Target 'LampstandTests' in project 'Lampstand'
+➜ Explicit dependency on target 'Lampstand' in project 'Lampstand'
+Target 'LampstandUITests' in project 'Lampstand'
+➜ Explicit dependency on target 'Lampstand' in project 'Lampstand'
+Target 'Lampstand' in project 'Lampstand' (no dependencies)
