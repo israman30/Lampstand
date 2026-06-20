@@ -64,11 +64,18 @@ Caching is implemented by `CoreDataVerseStore`:
 - **`Lampstand/Lampstand/LocalStorage/`**: Core Data cache (`PersistenceController`, `VerseStore`, model builder)
 - **`Lampstand/LampstandTests/`**: unit tests for view models and networking behavior
 
+### Requirements
+
+- **Xcode**: 16 or later (Swift 6 concurrency settings)
+- **Minimum iOS**: 17.0 (iPhone and iPad)
+
+The app uses SwiftUI APIs introduced in iOS 17 (`ContentUnavailableView`, two-value `onChange`) plus iOS 16 navigation/toolbar APIs (`NavigationStack`, `scrollContentBackground`, `toolbarBackground`). All targets share a single deployment target of **17.0**.
+
 ### Running the app
 
 1. Open `Lampstand/Lampstand.xcodeproj` in Xcode.
 2. Select the `Lampstand` scheme.
-3. Run on an iOS Simulator (or a connected device).
+3. Run on an iOS 17+ Simulator (or a connected device running iOS 17 or later).
 
 To run tests: Product → Test (or `⌘U`).
 
