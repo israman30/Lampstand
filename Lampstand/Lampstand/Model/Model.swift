@@ -7,6 +7,11 @@
 
 import Foundation
 
+/// A UI-friendly wrapper around a chapter fetch.
+///
+/// The network layer fetches raw verses, but the reader UI benefits from having
+/// "previous/next chapter" hints computed alongside the verses so navigation can be
+/// enabled/disabled without additional logic in the view.
 struct ChapterPage {
     let book: String
     let chapter: Int
@@ -15,12 +20,21 @@ struct ChapterPage {
     let nextChapter: Int?
 }
 
+/// Metadata for a single Bible book.
+///
+/// - `id` is a stable identifier used for `Picker` selections and persistence.
+/// - `chapterCount` is the canonical upper bound used for clamping navigation.
 struct BibleBook: Identifiable, Hashable {
     let id: Int
     let name: String
     let chapterCount: Int
 }
 
+/// Canonical list of Bible books with chapter counts.
+///
+/// This is intentionally hard-coded:
+/// - It keeps the app functional offline (book navigation doesn't depend on network availability).
+/// - It provides consistent ordering/IDs across app launches and versions.
 enum BibleBookCatalog {
     static let all: [BibleBook] = [
         .init(id: 1, name: "Genesis", chapterCount: 50),
@@ -92,16 +106,36 @@ enum BibleBookCatalog {
     ]
 }
 
+/// The most common JSON shape for chapter payloads in the upstream dataset.
+///
+/// Example:
+/// `{ "verses": [ { ... }, { ... } ] }`
 struct ChapterResponse: Decodable {
     let verses: [Verse]
 }
 
+/// A single Bible verse.
+///
+/// The upstream JSON dataset is not perfectly consistent across versions/files:
+/// - Field names can vary (e.g. `book` vs `book_name`, `chapter` vs `chapter_nr`)
+/// - Numeric fields can be encoded as either numbers or strings
+///
+/// The custom `Decodable` implementation makes the app resilient to those variations so
+/// a single outlier JSON file doesn’t break reading/search flows.
 struct Verse: Decodable, Identifiable {
+    /// A stable identifier for SwiftUI lists.
+    ///
+    /// We prefer a deterministic id over a random UUID so the same verse re-renders predictably
+    /// across cache refreshes. If the payload omits the book name, we fall back to `"unknown"`.
     var id: String { "\(book ?? "unknown")-\(chapter)-\(verse)" }
 
+    /// Book name as provided by the payload (may be missing in some files).
     let book: String?
+    /// 1-based chapter number (defaults to 0 if the payload is malformed).
     let chapter: Int
+    /// 1-based verse number (defaults to 0 if the payload is malformed).
     let verse: Int
+    /// Verse text (defaults to empty string if the payload is malformed).
     let text: String
 
     enum CodingKeys: String, CodingKey {
@@ -117,10 +151,12 @@ struct Verse: Decodable, Identifiable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
+        // Support both `book` and `book_name` depending on the file/version.
         book =
             (try? container.decodeIfPresent(String.self, forKey: .book)) ??
             (try? container.decodeIfPresent(String.self, forKey: .bookName))
 
+        // Some sources encode numbers as strings. We accept both to reduce brittleness.
         func decodeInt(forKey key: CodingKeys) -> Int? {
             if let value = try? container.decodeIfPresent(Int.self, forKey: key) {
                 return value
@@ -132,14 +168,17 @@ struct Verse: Decodable, Identifiable {
             return nil
         }
 
+        // Prefer the more "standard" keys, but fall back to `_nr` keys when present.
         chapter = decodeInt(forKey: .chapter) ?? decodeInt(forKey: .chapterNr) ?? 0
         verse = decodeInt(forKey: .verse) ?? decodeInt(forKey: .verseNr) ?? 0
 
+        // Missing text is treated as empty to avoid failing the entire decode for one bad entry.
         text = (try? container.decode(String.self, forKey: .text)) ?? ""
     }
 }
 
 extension Verse {
+    /// Convenience initializer used by tests and caching layers.
     init(book: String?, chapter: Int, verse: Int, text: String) {
         self.book = book
         self.chapter = chapter
