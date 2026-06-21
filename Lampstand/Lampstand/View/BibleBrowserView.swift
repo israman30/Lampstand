@@ -16,6 +16,7 @@ struct BibleBrowserView: View {
     
     @AppStorage("lampstand.appearance")
     private var appearanceRawValue: String = LampstandAppearance.system.rawValue
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init() {
         self._viewModel = StateObject(
@@ -52,11 +53,13 @@ struct BibleBrowserView: View {
                                 }
                             }
                             .pickerStyle(.menu)
+                            .accessibilityHint("Choose a Bible book to read")
                         } footer: {
                             if let selected = viewModel.selectedBook {
                                 Text("\(selected.chapterCount) chapters")
                                     .font(LampstandTheme.Typography.caption)
                                     .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+                                    .accessibilityLabel("\(selected.chapterCount) chapters in \(selected.name)")
                             }
                         }
 
@@ -77,12 +80,22 @@ struct BibleBrowserView: View {
                                             .imageScale(.medium)
                                     }
                                     .disabled(viewModel.selectedChapter <= viewModel.chapterRange.lowerBound)
+                                    .accessibilityLabel("Previous chapter")
+                                    .accessibilityHint(
+                                        viewModel.selectedChapter > viewModel.chapterRange.lowerBound
+                                            ? "Go to chapter \(viewModel.selectedChapter - 1)"
+                                            : "Already at the first chapter"
+                                    )
 
                                     Spacer()
 
                                     Text("Chapter \(viewModel.selectedChapter)")
                                         .font(LampstandTheme.Typography.title)
                                         .foregroundStyle(LampstandTheme.Palette.ink)
+                                        .accessibilityAddTraits(.isHeader)
+                                        .accessibilityLabel(
+                                            "Chapter \(viewModel.selectedChapter) of \(viewModel.selectedBook?.name ?? "")"
+                                        )
 
                                     Spacer()
 
@@ -94,6 +107,12 @@ struct BibleBrowserView: View {
                                             .imageScale(.medium)
                                     }
                                     .disabled(viewModel.selectedChapter >= viewModel.chapterRange.upperBound)
+                                    .accessibilityLabel("Next chapter")
+                                    .accessibilityHint(
+                                        viewModel.selectedChapter < viewModel.chapterRange.upperBound
+                                            ? "Go to chapter \(viewModel.selectedChapter + 1)"
+                                            : "Already at the last chapter"
+                                    )
                                 }
                                 .buttonStyle(.borderedProminent)
 
@@ -104,6 +123,7 @@ struct BibleBrowserView: View {
                                             .font(LampstandTheme.Typography.body)
                                             .foregroundStyle(LampstandTheme.Palette.inkSecondary)
                                     }
+                                    .lampstandLoadingStatus("Loading chapter", isLoading: true)
                                 }
 
                                 if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
@@ -111,6 +131,8 @@ struct BibleBrowserView: View {
                                 } else {
                                     ForEach(viewModel.verses) { verse in
                                         VerseRow(
+                                            bookName: viewModel.selectedBook?.name,
+                                            chapter: viewModel.selectedChapter,
                                             verseNumber: verse.verse,
                                             text: verse.text,
                                             isHighlighted: highlightedVerse == verse.verse
@@ -128,15 +150,22 @@ struct BibleBrowserView: View {
                     }
                     .listStyle(.insetGrouped)
                     .scrollContentBackground(.hidden)
+                    .accessibilityRotor("Verses") {
+                        ForEach(viewModel.verses) { verse in
+                            AccessibilityRotorEntry("Verse \(verse.verse)", id: verse.verse) {
+                                pendingScrollToVerse = verse.verse
+                                highlightedVerse = verse.verse
+                                scrollToVerse(verse.verse, proxy: proxy)
+                            }
+                        }
+                    }
                     .onChange(of: viewModel.verses.count) { _, _ in
                         guard let target = pendingScrollToVerse else { return }
                         pendingScrollToVerse = nil
                         highlightedVerse = target
                         // The list needs a beat to lay out new rows before ScrollViewReader can reliably scroll to them.
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                            withAnimation(.easeInOut) {
-                                proxy.scrollTo(target, anchor: .top)
-                            }
+                            scrollToVerse(target, proxy: proxy)
                         }
                         // Highlight is intentionally temporary—enough to orient the user, without staying “stuck on.”
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -157,6 +186,7 @@ struct BibleBrowserView: View {
                         Image(systemName: "magnifyingglass")
                     }
                     .accessibilityLabel("Search")
+                    .accessibilityHint("Find a specific Bible verse")
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -171,6 +201,7 @@ struct BibleBrowserView: View {
                             ForEach(versions, id: \.self) { version in
                                 Text(version.uppercased())
                                     .tag(version)
+                                    .accessibilityLabel(LampstandAccessibility.spokenVersion(version))
                             }
                         }
 
@@ -185,10 +216,22 @@ struct BibleBrowserView: View {
                     } label: {
                         Image(systemName: "slider.horizontal.3")
                     }
+                    .lampstandSettingsMenuLabel()
                 }
             }
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(LampstandTheme.Palette.parchment, for: .navigationBar)
+            .onChange(of: viewModel.isLoading) { _, isLoading in
+                if isLoading {
+                    LampstandAccessibility.announce("Loading chapter")
+                }
+            }
+            .onChange(of: highlightedVerse) { _, verse in
+                guard let verse, let book = viewModel.selectedBook?.name else { return }
+                LampstandAccessibility.announce(
+                    "Highlighted \(LampstandAccessibility.verseReference(book: book, chapter: viewModel.selectedChapter, verse: verse))"
+                )
+            }
         }
         .task {
             viewModel.fetchSelectedChapter()
@@ -207,9 +250,21 @@ struct BibleBrowserView: View {
             }
         }
     }
+
+    private func scrollToVerse(_ verse: Int, proxy: ScrollViewProxy) {
+        if reduceMotion {
+            proxy.scrollTo(verse, anchor: .top)
+        } else {
+            withAnimation(.easeInOut) {
+                proxy.scrollTo(verse, anchor: .top)
+            }
+        }
+    }
 }
 
 private struct VerseRow: View {
+    let bookName: String?
+    let chapter: Int
     let verseNumber: Int
     let text: String
     let isHighlighted: Bool
@@ -222,6 +277,7 @@ private struct VerseRow: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Capsule().fill(LampstandTheme.Palette.stroke.opacity(0.9)))
+                .accessibilityHidden(true)
 
             Text(text)
                 .font(LampstandTheme.Typography.body)
@@ -230,6 +286,17 @@ private struct VerseRow: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .lampstandCard(isHighlighted: isHighlighted)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            LampstandAccessibility.verseLabel(
+                book: bookName,
+                chapter: chapter,
+                verse: verseNumber,
+                text: text,
+                isHighlighted: isHighlighted
+            )
+        )
+        .accessibilityAddTraits(isHighlighted ? [.isSelected] : [])
     }
 }
 

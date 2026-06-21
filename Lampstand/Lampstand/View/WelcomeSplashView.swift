@@ -10,6 +10,7 @@ import SwiftUI
 struct WelcomeSplashView: View {
     var onContinue: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isFadingOut = false
 
     var body: some View {
@@ -31,12 +32,14 @@ struct WelcomeSplashView: View {
                     .font(.system(size: 56))
                     .foregroundStyle(LampstandTheme.Palette.accent)
                     .symbolRenderingMode(.hierarchical)
+                    .lampstandDecorativeImage()
 
                 VStack(spacing: 12) {
                     Text("Welcome to Lampstand")
                         .font(LampstandTheme.Typography.title)
                         .foregroundStyle(LampstandTheme.Palette.ink)
                         .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
 
                     Text("A quiet place to read and search the Bible.")
                         .font(LampstandTheme.Typography.body)
@@ -44,6 +47,7 @@ struct WelcomeSplashView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                 }
+                .accessibilityElement(children: .combine)
 
                 Spacer()
 
@@ -56,14 +60,22 @@ struct WelcomeSplashView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(LampstandTheme.Palette.accent)
                 .disabled(isFadingOut)
+                .accessibilityHint("Dismisses welcome screen and opens the Bible reader")
                 .padding(.horizontal, 32)
                 .padding(.bottom, 48)
             }
         }
         .opacity(isFadingOut ? 0 : 1)
+        .accessibilityAddTraits(.isModal)
     }
 
     private func fadeOutAndContinue() {
+        if reduceMotion {
+            isFadingOut = true
+            onContinue()
+            return
+        }
+
         withAnimation(.easeInOut(duration: 0.5)) {
             isFadingOut = true
         } completion: {

@@ -54,14 +54,19 @@ struct SearchBookView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .accessibilityHint("Choose the Bible book to search")
 
                     TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
                         .keyboardType(.numberPad)
                         .disabled(!viewModel.chapterEnabled)
+                        .accessibilityLabel("Chapter")
+                        .accessibilityHint("Enter the chapter number")
 
                     TextField("Verse (e.g. 16)", text: $viewModel.verseText)
                         .keyboardType(.numberPad)
                         .disabled(!viewModel.verseEnabled)
+                        .accessibilityLabel("Verse")
+                        .accessibilityHint("Enter the verse number")
                 }
 
                 Section("Result") {
@@ -72,6 +77,7 @@ struct SearchBookView: View {
                                 .font(LampstandTheme.Typography.body)
                                 .foregroundStyle(LampstandTheme.Palette.inkSecondary)
                         }
+                        .lampstandLoadingStatus("Searching for verse", isLoading: true)
                     }
 
                     if let message = viewModel.errorMessage, viewModel.displayedVerse == nil {
@@ -85,16 +91,28 @@ struct SearchBookView: View {
                             Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
                                 .font(LampstandTheme.Typography.headline)
                                 .foregroundStyle(LampstandTheme.Palette.ink)
+                                .accessibilityAddTraits(.isHeader)
+                                .accessibilityHidden(true)
 
                             Text(verse.text)
                                 .font(LampstandTheme.Typography.body)
                                 .foregroundStyle(LampstandTheme.Palette.ink)
                                 .lineSpacing(2)
+                                .accessibilityHidden(true)
                         }
                         .lampstandCard()
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(
+                            LampstandAccessibility.verseLabel(
+                                book: verse.book ?? viewModel.bookText,
+                                chapter: verse.chapter,
+                                verse: verse.verse,
+                                text: verse.text
+                            )
+                        )
                     } else {
                         ContentUnavailableView(
                             viewModel.placeholderTitle,
@@ -115,6 +133,7 @@ struct SearchBookView: View {
                                 .font(LampstandTheme.Typography.bodyEmphasis)
                         }
                         .buttonStyle(.borderedProminent)
+                        .accessibilityHint("Opens this verse in the main Bible reader")
                     }
                 }
             }
@@ -127,6 +146,7 @@ struct SearchBookView: View {
                 Button("Close") {
                     dismiss()
                 }
+                .accessibilityHint("Closes verse search")
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -135,6 +155,7 @@ struct SearchBookView: View {
                         ForEach(versions, id: \.self) { v in
                             Text(v.uppercased())
                                 .tag(v)
+                                .accessibilityLabel(LampstandAccessibility.spokenVersion(v))
                         }
                     }
 
@@ -149,10 +170,20 @@ struct SearchBookView: View {
                 } label: {
                     Image(systemName: "slider.horizontal.3")
                 }
+                .lampstandSettingsMenuLabel()
             }
         }
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(LampstandTheme.Palette.parchment, for: .navigationBar)
+        .onChange(of: viewModel.isLoading) { _, isLoading in
+            if isLoading {
+                LampstandAccessibility.announce("Searching for verse")
+            }
+        }
+        .onChange(of: viewModel.displayedVerse?.id) { _, verseId in
+            guard verseId != nil else { return }
+            LampstandAccessibility.announce("Verse found")
+        }
     }
 }
 

@@ -13,6 +13,7 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             BibleBrowserView()
+                .accessibilityHidden(!hasSeenWelcome)
 
             if !hasSeenWelcome {
                 WelcomeSplashView {

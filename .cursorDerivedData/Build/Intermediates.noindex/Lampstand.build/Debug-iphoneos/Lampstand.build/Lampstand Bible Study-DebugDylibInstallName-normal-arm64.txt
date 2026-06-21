@@ -1,0 +1,1 @@
+@rpath/Lampstand Bible Study.debug.dylib
