@@ -8,8 +8,19 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("lampstand.hasSeenWelcome") private var hasSeenWelcome = false
+
     var body: some View {
-        BibleBrowserView()
+        ZStack {
+            BibleBrowserView()
+
+            if !hasSeenWelcome {
+                WelcomeSplashView {
+                    hasSeenWelcome = true
+                }
+                .zIndex(1)
+            }
+        }
     }
 }
 
