@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4D8C636A2FE8DA8D0079FEB7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 4D8C63692FE8DA8D0079FEB7 /* Localizable.xcstrings */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		4DBF7F922FD88F4E00141AB7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4D8C63692FE8DA8D0079FEB7 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		4DBF7F842FD88F4C00141AB7 /* Lampstand Bible Study.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Lampstand Bible Study.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DBF7F912FD88F4E00141AB7 /* LampstandTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LampstandTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DBF7F9B2FD88F4E00141AB7 /* LampstandUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LampstandUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +80,7 @@
 		4DBF7F7B2FD88F4C00141AB7 = {
 			isa = PBXGroup;
 			children = (
+				4D8C63692FE8DA8D0079FEB7 /* Localizable.xcstrings */,
 				4DBF7F862FD88F4C00141AB7 /* Lampstand */,
 				4DBF7F942FD88F4E00141AB7 /* LampstandTests */,
 				4DBF7F9E2FD88F4E00141AB7 /* LampstandUITests */,
@@ -192,6 +198,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"es-419",
 			);
 			mainGroup = 4DBF7F7B2FD88F4C00141AB7;
 			minimizedProjectReferenceProxies = 1;
@@ -212,6 +219,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D8C636A2FE8DA8D0079FEB7 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -329,6 +337,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -386,6 +395,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
