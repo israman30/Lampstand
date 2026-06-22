@@ -48,48 +48,6 @@
 			<key>uniqueIdentifier</key>
 			<string>2323E8EC-E34D-46BE-BA68-D03756D41B4A</string>
 		</dict>
-		<key>895DEA67-9EF3-419E-B4F7-4236F1E6BF6C</key>
-		<dict>
-			<key>className</key>
-			<string>IDECommandLineBuildLog</string>
-			<key>documentTypeString</key>
-			<string>&lt;nil&gt;</string>
-			<key>domainType</key>
-			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
-			<key>fileName</key>
-			<string>895DEA67-9EF3-419E-B4F7-4236F1E6BF6C.xcactivitylog</string>
-			<key>hasPrimaryLog</key>
-			<true/>
-			<key>primaryObservable</key>
-			<dict>
-				<key>highLevelStatus</key>
-				<string>S</string>
-				<key>totalNumberOfAnalyzerIssues</key>
-				<integer>0</integer>
-				<key>totalNumberOfErrors</key>
-				<integer>0</integer>
-				<key>totalNumberOfTestFailures</key>
-				<integer>0</integer>
-				<key>totalNumberOfWarnings</key>
-				<integer>0</integer>
-			</dict>
-			<key>schemeIdentifier-containerName</key>
-			<string>Lampstand project</string>
-			<key>schemeIdentifier-schemeName</key>
-			<string>Lampstand</string>
-			<key>schemeIdentifier-sharedScheme</key>
-			<integer>1</integer>
-			<key>signature</key>
-			<string>Building project Lampstand for testing with scheme Lampstand</string>
-			<key>timeStartedRecording</key>
-			<real>803074392.01425803</real>
-			<key>timeStoppedRecording</key>
-			<real>803074397.56348503</real>
-			<key>title</key>
-			<string>Building project Lampstand for testing with scheme Lampstand</string>
-			<key>uniqueIdentifier</key>
-			<string>895DEA67-9EF3-419E-B4F7-4236F1E6BF6C</string>
-		</dict>
 	</dict>
 </dict>
 </plist>
