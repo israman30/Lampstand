@@ -39,6 +39,7 @@ struct BibleBrowserView: View {
 
                 ScrollViewReader { proxy in
                     List {
+                        // MARK: - Book Version { Picker ["en-asv", "en-kjv"] }
                         Section {
                             Picker("Book", selection: Binding(
                                     get: { viewModel.selectedBookId },
@@ -56,10 +57,7 @@ struct BibleBrowserView: View {
                             .accessibilityHint("Choose a Bible book to read")
                         } footer: {
                             if let selected = viewModel.selectedBook {
-                                Text("\(selected.chapterCount) chapters")
-                                    .font(LampstandTheme.Typography.caption)
-                                    .foregroundStyle(LampstandTheme.Palette.inkSecondary)
-                                    .accessibilityLabel("\(selected.chapterCount) chapters in \(selected.name)")
+                                selectedBook(book: selected)
                             }
                         }
 
@@ -259,6 +257,14 @@ struct BibleBrowserView: View {
                 proxy.scrollTo(verse, anchor: .top)
             }
         }
+    }
+    
+    // MARK: - Selected Book
+    private func selectedBook(book selected: BibleBook) -> some View {
+        Text("\(selected.chapterCount) chapters")
+            .font(LampstandTheme.Typography.caption)
+            .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+            .accessibilityLabel("\(selected.chapterCount) chapters in \(selected.name)")
     }
 }
 
