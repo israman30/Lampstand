@@ -65,7 +65,7 @@ struct BibleBrowserView: View {
                             if viewModel.selectedBook == nil {
                                 unavailableContent()
                             } else {
-                                // Selected Chapter Header
+                                // MARK: - Selected Chapter Header
                                 SelectedChapterHeaderView(viewMode: viewModel, previous: {
                                     viewModel.goToPreviousChapter()
                                 }, next: {
@@ -75,7 +75,7 @@ struct BibleBrowserView: View {
                                 if viewModel.isLoading {
                                     loadingChapter()
                                 }
-                                // List Cahpters
+                                // MARK: - List Chapters
                                 if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
                                     ContentUnavailableView("Couldn’t load chapter", systemImage: "exclamationmark.triangle", description: Text(message))
                                 } else {
