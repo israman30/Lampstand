@@ -63,67 +63,19 @@ struct BibleBrowserView: View {
 
                         Section {
                             if viewModel.selectedBook == nil {
-                                ContentUnavailableView(
-                                    "Select a book",
-                                    systemImage: "book",
-                                    description: Text("Pick a book from the menu to start reading.")
-                                )
+                                unavailableContent()
                             } else {
-                                HStack(spacing: 12) {
-                                    Button {
-                                        viewModel.goToPreviousChapter()
-                                    } label: {
-                                        Label("Previous", systemImage: "chevron.left")
-                                            .labelStyle(.iconOnly)
-                                            .imageScale(.medium)
-                                    }
-                                    .disabled(viewModel.selectedChapter <= viewModel.chapterRange.lowerBound)
-                                    .accessibilityLabel("Previous chapter")
-                                    .accessibilityHint(
-                                        viewModel.selectedChapter > viewModel.chapterRange.lowerBound
-                                            ? "Go to chapter \(viewModel.selectedChapter - 1)"
-                                            : "Already at the first chapter"
-                                    )
-
-                                    Spacer()
-
-                                    Text("Chapter \(viewModel.selectedChapter)")
-                                        .font(LampstandTheme.Typography.title)
-                                        .foregroundStyle(LampstandTheme.Palette.ink)
-                                        .accessibilityAddTraits(.isHeader)
-                                        .accessibilityLabel(
-                                            "Chapter \(viewModel.selectedChapter) of \(viewModel.selectedBook?.name ?? "")"
-                                        )
-
-                                    Spacer()
-
-                                    Button {
-                                        viewModel.goToNextChapter()
-                                    } label: {
-                                        Label("Next", systemImage: "chevron.right")
-                                            .labelStyle(.iconOnly)
-                                            .imageScale(.medium)
-                                    }
-                                    .disabled(viewModel.selectedChapter >= viewModel.chapterRange.upperBound)
-                                    .accessibilityLabel("Next chapter")
-                                    .accessibilityHint(
-                                        viewModel.selectedChapter < viewModel.chapterRange.upperBound
-                                            ? "Go to chapter \(viewModel.selectedChapter + 1)"
-                                            : "Already at the last chapter"
-                                    )
-                                }
-                                .buttonStyle(.borderedProminent)
-
+                                // Selected Chapter Header
+                                SelectedChapterHeaderView(viewMode: viewModel, previous: {
+                                    viewModel.goToPreviousChapter()
+                                }, next: {
+                                    viewModel.goToNextChapter()
+                                })
+                                // Loafing Chapter
                                 if viewModel.isLoading {
-                                    HStack(spacing: 12) {
-                                        ProgressView()
-                                        Text("Loading chapter…")
-                                            .font(LampstandTheme.Typography.body)
-                                            .foregroundStyle(LampstandTheme.Palette.inkSecondary)
-                                    }
-                                    .lampstandLoadingStatus("Loading chapter", isLoading: true)
+                                    loadingChapter()
                                 }
-
+                                // List Cahpters
                                 if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
                                     ContentUnavailableView("Couldn’t load chapter", systemImage: "exclamationmark.triangle", description: Text(message))
                                 } else {
@@ -266,6 +218,25 @@ struct BibleBrowserView: View {
             .foregroundStyle(LampstandTheme.Palette.inkSecondary)
             .accessibilityLabel("\(selected.chapterCount) chapters in \(selected.name)")
     }
+    
+    private func unavailableContent() -> some View {
+        ContentUnavailableView(
+            "Select a book",
+            systemImage: "book",
+            description: Text("Pick a book from the menu to start reading.")
+        )
+    }
+    
+    // MARK: - Loading `Chapter`
+    private func loadingChapter() -> some View {
+        HStack(spacing: 12) {
+            ProgressView()
+            Text("Loading chapter…")
+                .font(LampstandTheme.Typography.body)
+                .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+        }
+        .lampstandLoadingStatus("Loading chapter", isLoading: true)
+    }
 }
 
 #if DEBUG
@@ -276,3 +247,62 @@ struct BibleBrowserView_Previews: PreviewProvider {
 }
 #endif
 
+// MARK: - Selected Chapter Header Section
+struct SelectedChapterHeaderView: View {
+    var viewModel: BibleBrowserViewModel
+    var previous: () -> Void
+    var next: () -> Void
+    
+    init(viewMode: BibleBrowserViewModel, previous: @escaping () -> Void, next: @escaping () -> Void) {
+        self.viewModel = viewMode
+        self.previous = previous
+        self.next = next
+    }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Button {
+                previous()
+            } label: {
+                Label("Previous", systemImage: "chevron.left")
+                    .labelStyle(.iconOnly)
+                    .imageScale(.medium)
+            }
+            .disabled(viewModel.selectedChapter <= viewModel.chapterRange.lowerBound)
+            .accessibilityLabel("Previous chapter")
+            .accessibilityHint(
+                viewModel.selectedChapter > viewModel.chapterRange.lowerBound
+                    ? "Go to chapter \(viewModel.selectedChapter - 1)"
+                    : "Already at the first chapter"
+            )
+
+            Spacer()
+
+            Text("Chapter \(viewModel.selectedChapter)")
+                .font(LampstandTheme.Typography.title)
+                .foregroundStyle(LampstandTheme.Palette.ink)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityLabel(
+                    "Chapter \(viewModel.selectedChapter) of \(viewModel.selectedBook?.name ?? "")"
+                )
+
+            Spacer()
+
+            Button {
+                next()
+            } label: {
+                Label("Next", systemImage: "chevron.right")
+                    .labelStyle(.iconOnly)
+                    .imageScale(.medium)
+            }
+            .disabled(viewModel.selectedChapter >= viewModel.chapterRange.upperBound)
+            .accessibilityLabel("Next chapter")
+            .accessibilityHint(
+                viewModel.selectedChapter < viewModel.chapterRange.upperBound
+                    ? "Go to chapter \(viewModel.selectedChapter + 1)"
+                    : "Already at the last chapter"
+            )
+        }
+        .buttonStyle(.borderedProminent)
+    }
+}
