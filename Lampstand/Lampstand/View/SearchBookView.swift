@@ -180,6 +180,7 @@ struct SearchBookView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
                 .font(LampstandTheme.Typography.headline)
+                .textSelection(.enabled)
                 .foregroundStyle(LampstandTheme.Palette.ink)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityHidden(true)

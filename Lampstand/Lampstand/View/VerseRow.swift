@@ -21,11 +21,15 @@ struct VerseRow: View {
                 .foregroundStyle(LampstandTheme.Palette.inkSecondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Capsule().fill(LampstandTheme.Palette.stroke.opacity(0.9)))
+                .background(
+                    Capsule()
+                        .fill(LampstandTheme.Palette.stroke.opacity(0.9))
+                )
                 .accessibilityHidden(true)
 
             Text(text)
                 .font(LampstandTheme.Typography.body)
+                .textSelection(.enabled)
                 .foregroundStyle(LampstandTheme.Palette.ink)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
