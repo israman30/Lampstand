@@ -179,15 +179,19 @@ struct SearchBookView: View {
     private func verseResult(verse: Verse) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
-                .font(LampstandTheme.Typography.headline)
-                .textSelection(.enabled)
-                .foregroundStyle(LampstandTheme.Palette.ink)
+                .verseTextStyle(
+                    font: LampstandTheme.Typography.headline,
+                    color: LampstandTheme.Palette.ink
+                )
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityHidden(true)
 
             Text(verse.text)
-                .font(LampstandTheme.Typography.body)
-                .foregroundStyle(LampstandTheme.Palette.ink)
+                .verseTextStyle(
+                    font: LampstandTheme.Typography.body,
+                    color: LampstandTheme.Palette.ink
+                )
+                .textSelection(.enabled)
                 .lineSpacing(2)
                 .accessibilityHidden(true)
         }
