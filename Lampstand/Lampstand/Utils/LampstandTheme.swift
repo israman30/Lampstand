@@ -132,6 +132,7 @@ struct LampstandScreenBackground: ViewModifier {
     }
 }
 
+/// `Lampstand Card View Modifier`
 extension View {
     func lampstandScreenBackground() -> some View {
         modifier(LampstandScreenBackground())

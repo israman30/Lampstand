@@ -45,10 +45,11 @@ extension NetworkManager: NetworkManagerProtocol { }
 
 final class NetworkManager {
     private let baseURL: URL
+    private static let endpointURL = URL(string: "https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles")!
 
     /// Base path for the Bible API JSON files.
     /// - Important: These are static JSON files served via jsDelivr, not a traditional REST service.
-    init(baseURL: URL = URL(string: "https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles")!) {
+    init(baseURL: URL = endpointURL) {
         self.baseURL = baseURL
     }
 
@@ -113,7 +114,10 @@ final class NetworkManager {
             return verse
         }
 
-        struct VerseWrapper: Decodable { let verse: Verse }
+        struct VerseWrapper: Decodable {
+            let verse: Verse
+        }
+        
         if let wrapper = try? decoder.decode(VerseWrapper.self, from: data) {
             return wrapper.verse
         }
@@ -145,7 +149,10 @@ final class NetworkManager {
             return verses
         }
 
-        struct DataWrapper: Decodable { let data: [Verse] }
+        struct DataWrapper: Decodable {
+            let data: [Verse]
+        }
+        
         if let wrapper = try? decoder.decode(DataWrapper.self, from: data) {
             return wrapper.data
         }

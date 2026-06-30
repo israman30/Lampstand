@@ -46,6 +46,7 @@ struct SearchBookView: View {
             .ignoresSafeArea()
 
             List {
+                // MARK: - Query Verse section with user { Picker, TextField } selection
                 Section("Search") {
                     Picker("Book", selection: $viewModel.bookText) {
                         Text("Select a book").tag("")
@@ -68,51 +69,17 @@ struct SearchBookView: View {
                         .accessibilityLabel("Verse")
                         .accessibilityHint("Enter the verse number")
                 }
-
+                // MARK: - Section Result after query Verse
                 Section("Result") {
                     if viewModel.isLoading {
-                        HStack(spacing: 12) {
-                            ProgressView()
-                            Text("Searching…")
-                                .font(LampstandTheme.Typography.body)
-                                .foregroundStyle(LampstandTheme.Palette.inkSecondary)
-                        }
-                        .lampstandLoadingStatus("Searching for verse", isLoading: true)
+                        loadingResult("Searching…")
                     }
 
-                    if let message = viewModel.errorMessage, viewModel.displayedVerse == nil {
-                        ContentUnavailableView(
-                            "Couldn’t load",
-                            systemImage: "exclamationmark.triangle",
-                            description: Text(message)
-                        )
+                    if let message = viewModel.errorMessage,
+                        viewModel.displayedVerse == nil {
+                        errorResult(with: message)
                     } else if let verse = viewModel.displayedVerse {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
-                                .font(LampstandTheme.Typography.headline)
-                                .foregroundStyle(LampstandTheme.Palette.ink)
-                                .accessibilityAddTraits(.isHeader)
-                                .accessibilityHidden(true)
-
-                            Text(verse.text)
-                                .font(LampstandTheme.Typography.body)
-                                .foregroundStyle(LampstandTheme.Palette.ink)
-                                .lineSpacing(2)
-                                .accessibilityHidden(true)
-                        }
-                        .lampstandCard()
-                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(
-                            LampstandAccessibility.verseLabel(
-                                book: verse.book ?? viewModel.bookText,
-                                chapter: verse.chapter,
-                                verse: verse.verse,
-                                text: verse.text
-                            )
-                        )
+                        verseResult(verse: verse)
                     } else {
                         ContentUnavailableView(
                             viewModel.placeholderTitle,
@@ -148,19 +115,21 @@ struct SearchBookView: View {
                 }
                 .accessibilityHint("Closes verse search")
             }
-
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    // MARK: - Bible Version Selection { Menu ["en-asv", "en-kjv"] }
                     Picker("Version", selection: $viewModel.version) {
-                        ForEach(versions, id: \.self) { v in
-                            Text(v.uppercased())
-                                .tag(v)
-                                .accessibilityLabel(LampstandAccessibility.spokenVersion(v))
+                        ForEach(versions, id: \.self) { version in
+                            Text(version.uppercased())
+                                .tag(version)
+                                .accessibilityLabel(
+                                    LampstandAccessibility.spokenVersion(version)
+                                )
                         }
                     }
 
                     Divider()
-
+                    // MARK: - UI Apperance { System, Light, Dark }
                     Picker("Appearance", selection: $appearanceRawValue) {
                         ForEach(LampstandAppearance.allCases) { option in
                             Label(option.title, systemImage: option.systemImage)
@@ -184,6 +153,61 @@ struct SearchBookView: View {
             guard verseId != nil else { return }
             LampstandAccessibility.announce("Verse found")
         }
+    }
+    
+    // Laoding Result
+    private func loadingResult(_ message: String) -> some View {
+        HStack(spacing: 12) {
+            ProgressView()
+            Text(message)
+                .font(LampstandTheme.Typography.body)
+                .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+        }
+        .lampstandLoadingStatus("Searching for verse", isLoading: true)
+    }
+    
+    // Error Result
+    private func errorResult(with message: String) -> some View {
+        ContentUnavailableView(
+            "Couldn’t load",
+            systemImage: "exclamationmark.triangle",
+            description: Text(message)
+        )
+    }
+    
+    // Verse Query Result
+    private func verseResult(verse: Verse) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
+                .verseTextStyle(
+                    font: LampstandTheme.Typography.headline,
+                    color: LampstandTheme.Palette.ink
+                )
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityHidden(true)
+
+            Text(verse.text)
+                .verseTextStyle(
+                    font: LampstandTheme.Typography.body,
+                    color: LampstandTheme.Palette.ink
+                )
+                .textSelection(.enabled)
+                .lineSpacing(2)
+                .accessibilityHidden(true)
+        }
+        .lampstandCard()
+        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            LampstandAccessibility.verseLabel(
+                book: verse.book ?? viewModel.bookText,
+                chapter: verse.chapter,
+                verse: verse.verse,
+                text: verse.text
+            )
+        )
     }
 }
 
