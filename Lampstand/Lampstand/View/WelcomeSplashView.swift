@@ -28,26 +28,7 @@ struct WelcomeSplashView: View {
             VStack(spacing: 28) {
                 Spacer()
 
-                Image(systemName: "lamp.desk.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(LampstandTheme.Palette.accent)
-                    .symbolRenderingMode(.hierarchical)
-                    .lampstandDecorativeImage()
-
-                VStack(spacing: 12) {
-                    Text("Welcome to Lampstand")
-                        .font(LampstandTheme.Typography.title)
-                        .foregroundStyle(LampstandTheme.Palette.ink)
-                        .multilineTextAlignment(.center)
-                        .accessibilityAddTraits(.isHeader)
-
-                    Text("A quiet place to read and search the Bible.")
-                        .font(LampstandTheme.Typography.body)
-                        .foregroundStyle(LampstandTheme.Palette.inkSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                }
-                .accessibilityElement(children: .combine)
+                BodyOnboardingView()
 
                 Spacer()
 
@@ -82,6 +63,33 @@ struct WelcomeSplashView_Previews: PreviewProvider {
     }
 }
 #endif
+
+struct BodyOnboardingView: View {
+    var body: some View {
+        VStack {
+            Image(systemName: "lamp.desk.fill")
+                .font(.system(size: 56))
+                .foregroundStyle(LampstandTheme.Palette.accent)
+                .symbolRenderingMode(.hierarchical)
+                .lampstandDecorativeImage()
+
+            VStack(spacing: 12) {
+                Text("Welcome to Lampstand")
+                    .font(LampstandTheme.Typography.title)
+                    .foregroundStyle(LampstandTheme.Palette.ink)
+                    .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
+
+                Text("A quiet place to read and search the Bible.")
+                    .font(LampstandTheme.Typography.body)
+                    .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+}
 
 struct GetStartedButton: View {
     @Binding var isFadingOut: Bool
