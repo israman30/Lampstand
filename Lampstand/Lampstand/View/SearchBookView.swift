@@ -47,28 +47,7 @@ struct SearchBookView: View {
 
             List {
                 // MARK: - Query Verse section with user { Picker, TextField } selection
-                Section("Search") {
-                    Picker("Book", selection: $viewModel.bookText) {
-                        Text("Select a book").tag("")
-                        ForEach(viewModel.availableBooks, id: \.self) { book in
-                            Text(book).tag(book)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .accessibilityHint("Choose the Bible book to search")
-
-                    TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
-                        .keyboardType(.numberPad)
-                        .disabled(!viewModel.chapterEnabled)
-                        .accessibilityLabel("Chapter")
-                        .accessibilityHint("Enter the chapter number")
-
-                    TextField("Verse (e.g. 16)", text: $viewModel.verseText)
-                        .keyboardType(.numberPad)
-                        .disabled(!viewModel.verseEnabled)
-                        .accessibilityLabel("Verse")
-                        .accessibilityHint("Enter the verse number")
-                }
+                VerseSelectionView(viewModel: viewModel)
                 // MARK: - Section Result after query Verse
                 Section("Result") {
                     if viewModel.isLoading {
@@ -225,3 +204,29 @@ struct SearchBookView_Previews: PreviewProvider {
     }
 }
 #endif
+
+struct VerseSelectionView: View {
+    @State var viewModel: BookViewModel
+    var body: some View {
+        Picker("Book", selection: $viewModel.bookText) {
+            Text("Select a book").tag("")
+            ForEach(viewModel.availableBooks, id: \.self) { book in
+                Text(book).tag(book)
+            }
+        }
+        .pickerStyle(.menu)
+        .accessibilityHint("Choose the Bible book to search")
+
+        TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
+            .keyboardType(.numberPad)
+            .disabled(!viewModel.chapterEnabled)
+            .accessibilityLabel("Chapter")
+            .accessibilityHint("Enter the chapter number")
+
+        TextField("Verse (e.g. 16)", text: $viewModel.verseText)
+            .keyboardType(.numberPad)
+            .disabled(!viewModel.verseEnabled)
+            .accessibilityLabel("Verse")
+            .accessibilityHint("Enter the verse number")
+    }
+}
