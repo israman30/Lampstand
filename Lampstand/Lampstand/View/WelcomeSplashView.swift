@@ -51,18 +51,9 @@ struct WelcomeSplashView: View {
 
                 Spacer()
 
-                Button(action: fadeOutAndContinue) {
-                    Text("Get Started")
-                        .font(LampstandTheme.Typography.bodyEmphasis)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
+                GetStartedButton(isFadingOut: $isFadingOut) {
+                    fadeOutAndContinue()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(LampstandTheme.Palette.accent)
-                .disabled(isFadingOut)
-                .accessibilityHint("Dismisses welcome screen and opens the Bible reader")
-                .padding(.horizontal, 32)
-                .padding(.bottom, 48)
             }
         }
         .opacity(isFadingOut ? 0 : 1)
@@ -91,3 +82,28 @@ struct WelcomeSplashView_Previews: PreviewProvider {
     }
 }
 #endif
+
+struct GetStartedButton: View {
+    @Binding var isFadingOut: Bool
+    var action: () -> Void
+    
+    init(isFadingOut: Binding<Bool>, action: @escaping () -> Void) {
+        self.action = action
+        self._isFadingOut = isFadingOut
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            Text("Get Started")
+                .font(LampstandTheme.Typography.bodyEmphasis)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(LampstandTheme.Palette.accent)
+        .disabled(isFadingOut)
+        .accessibilityHint("Dismisses welcome screen and opens the Bible reader")
+        .padding(.horizontal, 32)
+        .padding(.bottom, 48)
+    }
+}
