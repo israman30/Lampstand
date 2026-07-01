@@ -175,9 +175,31 @@ final class NetworkManagerProtocolTests: XCTestCase {
         let actualText = verse.text
 
         XCTAssertEqual(actualBook, "Genesis")
-        XCTAssertEqual(actualChapter, 0)
-        XCTAssertEqual(actualVerse, 0)
-        XCTAssertEqual(actualText, "")
+        XCTAssertEqual(actualChapter, 1)
+        XCTAssertEqual(actualVerse, 2)
+        XCTAssertEqual(actualText, "And the earth...")
+    }
+
+    func test_fetchVerse_fillsMissingChapterFromRequest() async throws {
+        let baseURL = URL(string: "https://example.com/bibles")!
+        let sut = NetworkManager(baseURL: baseURL)
+
+        let payload = """
+        { "book": "John", "verse": 16, "text": "For God so loved the world..." }
+        """.data(using: .utf8)!
+
+        URLProtocolStub.requestHandler = { request in
+            let url = try XCTUnwrap(request.url)
+            let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, payload)
+        }
+
+        let verse = try await sut.fetchVerse(book: "John", chapter: 3, verse: 16, version: "en-asv")
+
+        XCTAssertEqual(verse.book, "John")
+        XCTAssertEqual(verse.chapter, 3)
+        XCTAssertEqual(verse.verse, 16)
+        XCTAssertEqual(verse.text, "For God so loved the world...")
     }
 
     func test_fetchVerse_throwsUnexpectedPayload_forUnknownJSON() async {

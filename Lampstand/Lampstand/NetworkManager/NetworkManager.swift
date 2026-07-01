@@ -105,21 +105,29 @@ final class NetworkManager {
             throw NetworkError.httpStatus(http.statusCode)
         }
 
+        let decoded = try Self.decodeSingleVerse(from: data)
+        return decoded.resolvingReferences(book: book, chapter: chapter, verse: verse)
+    }
+
+    private struct VerseWrapper: Decodable {
+        let verse: Verse
+    }
+
+    /// Decodes a single-verse payload, preferring wrapped shapes when present.
+    ///
+    /// Wrapped payloads such as `{ "verse": { ... } }` also decode as a bare `Verse` with empty fields,
+    /// so we validate that decoded text is non-empty before accepting a shape.
+    private static func decodeSingleVerse(from data: Data) throws -> Verse {
         let decoder = JSONDecoder()
 
-        // The upstream repo isn't fully consistent across files:
-        // - Sometimes the response is a plain `Verse`
-        // - Sometimes it's wrapped (e.g., { "verse": { ... } })
-        if let verse = try? decoder.decode(Verse.self, from: data) {
-            return verse
+        if let wrapper = try? decoder.decode(VerseWrapper.self, from: data),
+           !wrapper.verse.text.isEmpty {
+            return wrapper.verse
         }
 
-        struct VerseWrapper: Decodable {
-            let verse: Verse
-        }
-        
-        if let wrapper = try? decoder.decode(VerseWrapper.self, from: data) {
-            return wrapper.verse
+        if let verse = try? decoder.decode(Verse.self, from: data),
+           !verse.text.isEmpty {
+            return verse
         }
 
         throw NetworkError.unexpectedPayload
