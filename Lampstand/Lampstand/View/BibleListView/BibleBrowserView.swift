@@ -40,26 +40,7 @@ struct BibleBrowserView: View {
                 ScrollViewReader { proxy in
                     List {
                         // MARK: - Book Version { Picker ["en-asv", "en-kjv"] }
-                        Section {
-                            Picker("Book", selection: Binding(
-                                    get: { viewModel.selectedBookId },
-                                    set: { viewModel.userSelectedBook(id: $0) }
-                                )
-                            ) {
-                                ForEach(viewModel.availableBooks) { book in
-                                    Text(book.name)
-                                        .font(LampstandTheme.Typography.bodyEmphasis)
-                                        .foregroundStyle(LampstandTheme.Palette.ink)
-                                        .tag(book.id)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .accessibilityHint("Choose a Bible book to read")
-                        } footer: {
-                            if let selected = viewModel.selectedBook {
-                                selectedBook(book: selected)
-                            }
-                        }
+                        BookVersionPicker(viewModel: viewModel)
 
                         Section {
                             if viewModel.selectedBook == nil {
@@ -79,7 +60,7 @@ struct BibleBrowserView: View {
                                 if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
                                     ContentUnavailableView("Couldn’t load chapter", systemImage: "exclamationmark.triangle", description: Text(message))
                                 } else {
-                                    ForEach(viewModel.verses) { verse in
+                                    ForEach(viewModel.verses, id: \.id) { verse in
                                         VerseRow(
                                             bookName: viewModel.selectedBook?.name,
                                             chapter: viewModel.selectedChapter,
@@ -101,7 +82,7 @@ struct BibleBrowserView: View {
                     .listStyle(.insetGrouped)
                     .scrollContentBackground(.hidden)
                     .accessibilityRotor("Verses") {
-                        ForEach(viewModel.verses) { verse in
+                        ForEach(viewModel.verses, id: \.id) { verse in
                             AccessibilityRotorEntry("Verse \(verse.verse)", id: verse.verse) {
                                 pendingScrollToVerse = verse.verse
                                 highlightedVerse = verse.verse
@@ -158,7 +139,7 @@ struct BibleBrowserView: View {
                         Divider()
 
                         Picker("Appearance", selection: $appearanceRawValue) {
-                            ForEach(LampstandAppearance.allCases) { option in
+                            ForEach(LampstandAppearance.allCases, id: \.self) { option in
                                 Label(option.title, systemImage: option.systemImage)
                                     .tag(option.rawValue)
                             }
@@ -247,4 +228,36 @@ struct BibleBrowserView_Previews: PreviewProvider {
 }
 #endif
 
-
+struct BookVersionPicker: View {
+    @State var viewModel: BibleBrowserViewModel
+    var body: some View {
+        Section {
+            Picker("Book", selection: Binding(
+                    get: { viewModel.selectedBookId },
+                    set: { viewModel.userSelectedBook(id: $0) }
+                )
+            ) {
+                ForEach(viewModel.availableBooks, id: \.id) { book in
+                    Text(book.name)
+                        .font(LampstandTheme.Typography.bodyEmphasis)
+                        .foregroundStyle(LampstandTheme.Palette.ink)
+                        .tag(book.id)
+                }
+            }
+            .pickerStyle(.menu)
+            .accessibilityHint("Choose a Bible book to read")
+        } footer: {
+            if let selected = viewModel.selectedBook {
+                selectedBook(book: selected)
+            }
+        }
+    }
+    
+    // MARK: - Selected Book
+    private func selectedBook(book selected: BibleBook) -> some View {
+        Text("\(selected.chapterCount) chapters")
+            .font(LampstandTheme.Typography.caption)
+            .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+            .accessibilityLabel("\(selected.chapterCount) chapters in \(selected.name)")
+    }
+}
