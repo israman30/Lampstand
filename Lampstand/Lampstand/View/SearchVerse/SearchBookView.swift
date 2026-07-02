@@ -151,67 +151,6 @@ struct SearchBookView_Previews: PreviewProvider {
 }
 #endif
 
-struct VerseSelectionView: View {
-    @State var viewModel: BookViewModel
-    var body: some View {
-        Picker("Book", selection: $viewModel.bookText) {
-            Text("Select a book").tag("")
-            ForEach(viewModel.availableBooks, id: \.self) { book in
-                Text(book).tag(book)
-            }
-        }
-        .pickerStyle(.menu)
-        .accessibilityHint("Choose the Bible book to search")
 
-        TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
-            .keyboardType(.numberPad)
-            .disabled(!viewModel.chapterEnabled)
-            .accessibilityLabel("Chapter")
-            .accessibilityHint("Enter the chapter number")
 
-        TextField("Verse (e.g. 16)", text: $viewModel.verseText)
-            .keyboardType(.numberPad)
-            .disabled(!viewModel.verseEnabled)
-            .accessibilityLabel("Verse")
-            .accessibilityHint("Enter the verse number")
-    }
-}
 
-// Verse Query Result
-struct VerseResultView: View {
-    @ObservedObject var viewModel: BookViewModel
-    var verse: Verse
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
-                .verseTextStyle(
-                    font: LampstandTheme.Typography.headline,
-                    color: LampstandTheme.Palette.ink
-                )
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityHidden(true)
-
-            Text(verse.text)
-                .verseTextStyle(
-                    font: LampstandTheme.Typography.body,
-                    color: LampstandTheme.Palette.ink
-                )
-                .textSelection(.enabled)
-                .lineSpacing(2)
-                .accessibilityHidden(true)
-        }
-        .lampstandCard()
-        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            LampstandAccessibility.verseLabel(
-                book: verse.book ?? viewModel.bookText,
-                chapter: verse.chapter,
-                verse: verse.verse,
-                text: verse.text
-            )
-        )
-    }
-}
