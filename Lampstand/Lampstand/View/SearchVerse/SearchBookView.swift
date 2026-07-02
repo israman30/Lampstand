@@ -51,12 +51,13 @@ struct SearchBookView: View {
                 // MARK: - Section Result after query Verse
                 Section("Result") {
                     if viewModel.isLoading {
-                        loadingResult("Searching…")
+                        LoadingResultView(message: "Searching…")
+                            .lampstandLoadingStatus("Searching for verse", isLoading: true)
                     }
 
                     if let message = viewModel.errorMessage,
                         viewModel.displayedVerse == nil {
-                        errorResult(with: message)
+                        ErrorResultView(with: "Couldn’t load", icon: "exclamationmark.triangle", message: message)
                     } else if let verse = viewModel.displayedVerse {
                         VerseResultView(viewModel: viewModel, verse: verse)
                     } else {
@@ -133,61 +134,6 @@ struct SearchBookView: View {
             LampstandAccessibility.announce("Verse found")
         }
     }
-    
-    // Laoding Result
-    private func loadingResult(_ message: String) -> some View {
-        HStack(spacing: 12) {
-            ProgressView()
-            Text(message)
-                .font(LampstandTheme.Typography.body)
-                .foregroundStyle(LampstandTheme.Palette.inkSecondary)
-        }
-        .lampstandLoadingStatus("Searching for verse", isLoading: true)
-    }
-    
-    // Error Result
-    private func errorResult(with message: String) -> some View {
-        ContentUnavailableView(
-            "Couldn’t load",
-            systemImage: "exclamationmark.triangle",
-            description: Text(message)
-        )
-    }
-    
-    // Verse Query Result
-    private func verseResult(verse: Verse) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
-                .verseTextStyle(
-                    font: LampstandTheme.Typography.headline,
-                    color: LampstandTheme.Palette.ink
-                )
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityHidden(true)
-
-            Text(verse.text)
-                .verseTextStyle(
-                    font: LampstandTheme.Typography.body,
-                    color: LampstandTheme.Palette.ink
-                )
-                .textSelection(.enabled)
-                .lineSpacing(2)
-                .accessibilityHidden(true)
-        }
-        .lampstandCard()
-        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            LampstandAccessibility.verseLabel(
-                book: verse.book ?? viewModel.bookText,
-                chapter: verse.chapter,
-                verse: verse.verse,
-                text: verse.text
-            )
-        )
-    }
 }
 
 #if DEBUG
@@ -231,6 +177,7 @@ struct VerseSelectionView: View {
     }
 }
 
+// Verse Query Result
 struct VerseResultView: View {
     @ObservedObject var viewModel: BookViewModel
     var verse: Verse
