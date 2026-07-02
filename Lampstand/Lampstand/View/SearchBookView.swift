@@ -58,7 +58,7 @@ struct SearchBookView: View {
                         viewModel.displayedVerse == nil {
                         errorResult(with: message)
                     } else if let verse = viewModel.displayedVerse {
-                        verseResult(verse: verse)
+                        VerseResultView(viewModel: viewModel, verse: verse)
                     } else {
                         ContentUnavailableView(
                             viewModel.placeholderTitle,
@@ -228,5 +228,43 @@ struct VerseSelectionView: View {
             .disabled(!viewModel.verseEnabled)
             .accessibilityLabel("Verse")
             .accessibilityHint("Enter the verse number")
+    }
+}
+
+struct VerseResultView: View {
+    @ObservedObject var viewModel: BookViewModel
+    var verse: Verse
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
+                .verseTextStyle(
+                    font: LampstandTheme.Typography.headline,
+                    color: LampstandTheme.Palette.ink
+                )
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityHidden(true)
+
+            Text(verse.text)
+                .verseTextStyle(
+                    font: LampstandTheme.Typography.body,
+                    color: LampstandTheme.Palette.ink
+                )
+                .textSelection(.enabled)
+                .lineSpacing(2)
+                .accessibilityHidden(true)
+        }
+        .lampstandCard()
+        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            LampstandAccessibility.verseLabel(
+                book: verse.book ?? viewModel.bookText,
+                chapter: verse.chapter,
+                verse: verse.verse,
+                text: verse.text
+            )
+        )
     }
 }
