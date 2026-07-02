@@ -304,6 +304,7 @@
       }
     },
     "Loading chapter…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es-419" : {
           "stringUnit" : {

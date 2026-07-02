@@ -54,11 +54,17 @@ struct BibleBrowserView: View {
                                 })
                                 // Loafing Chapter
                                 if viewModel.isLoading {
-                                    loadingChapter()
+                                    // MARK: - Loading `Chapter`
+                                    LoadingResultView(message: "Loading chapter…")
+                                        .lampstandLoadingStatus("Loading chapter", isLoading: true)
                                 }
                                 // MARK: - List Chapters
                                 if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
-                                    ContentUnavailableView("Couldn’t load chapter", systemImage: "exclamationmark.triangle", description: Text(message))
+                                    ContentUnavailableView(
+                                        "Couldn’t load chapter",
+                                        systemImage: "exclamationmark.triangle",
+                                        description: Text(message)
+                                    )
                                 } else {
                                     ForEach(viewModel.verses, id: \.id) { verse in
                                         VerseRow(
@@ -192,31 +198,12 @@ struct BibleBrowserView: View {
         }
     }
     
-    // MARK: - Selected Book
-    private func selectedBook(book selected: BibleBook) -> some View {
-        Text("\(selected.chapterCount) chapters")
-            .font(LampstandTheme.Typography.caption)
-            .foregroundStyle(LampstandTheme.Palette.inkSecondary)
-            .accessibilityLabel("\(selected.chapterCount) chapters in \(selected.name)")
-    }
-    
     private func unavailableContent() -> some View {
         ContentUnavailableView(
             "Select a book",
             systemImage: "book",
             description: Text("Pick a book from the menu to start reading.")
         )
-    }
-    
-    // MARK: - Loading `Chapter`
-    private func loadingChapter() -> some View {
-        HStack(spacing: 12) {
-            ProgressView()
-            Text("Loading chapter…")
-                .font(LampstandTheme.Typography.body)
-                .foregroundStyle(LampstandTheme.Palette.inkSecondary)
-        }
-        .lampstandLoadingStatus("Loading chapter", isLoading: true)
     }
 }
 
@@ -228,36 +215,4 @@ struct BibleBrowserView_Previews: PreviewProvider {
 }
 #endif
 
-struct BookVersionPicker: View {
-    @State var viewModel: BibleBrowserViewModel
-    var body: some View {
-        Section {
-            Picker("Book", selection: Binding(
-                    get: { viewModel.selectedBookId },
-                    set: { viewModel.userSelectedBook(id: $0) }
-                )
-            ) {
-                ForEach(viewModel.availableBooks, id: \.id) { book in
-                    Text(book.name)
-                        .font(LampstandTheme.Typography.bodyEmphasis)
-                        .foregroundStyle(LampstandTheme.Palette.ink)
-                        .tag(book.id)
-                }
-            }
-            .pickerStyle(.menu)
-            .accessibilityHint("Choose a Bible book to read")
-        } footer: {
-            if let selected = viewModel.selectedBook {
-                selectedBook(book: selected)
-            }
-        }
-    }
-    
-    // MARK: - Selected Book
-    private func selectedBook(book selected: BibleBook) -> some View {
-        Text("\(selected.chapterCount) chapters")
-            .font(LampstandTheme.Typography.caption)
-            .foregroundStyle(LampstandTheme.Palette.inkSecondary)
-            .accessibilityLabel("\(selected.chapterCount) chapters in \(selected.name)")
-    }
-}
+
