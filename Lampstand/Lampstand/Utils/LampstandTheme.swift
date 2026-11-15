@@ -5,9 +5,9 @@ enum LampstandAppearance: String, CaseIterable, Identifiable {
     case system
     case light
     case dark
-
+    
     var id: String { rawValue }
-
+    
     var title: String {
         switch self {
         case .system: "System"
@@ -15,7 +15,7 @@ enum LampstandAppearance: String, CaseIterable, Identifiable {
         case .dark: "Dark"
         }
     }
-
+    
     var systemImage: String {
         switch self {
         case .system: "circle.lefthalf.filled"
@@ -23,7 +23,7 @@ enum LampstandAppearance: String, CaseIterable, Identifiable {
         case .dark: "moon.stars"
         }
     }
-
+    
     var colorScheme: ColorScheme? {
         switch self {
         case .system: nil
@@ -43,7 +43,7 @@ enum LampstandTheme {
                 return UIColor(red: 0.99, green: 0.97, blue: 0.93, alpha: 1.0)
             }
         )
-
+        
         static let parchmentTint = Color(
             uiColor: UIColor { traits in
                 if traits.userInterfaceStyle == .dark {
@@ -52,7 +52,7 @@ enum LampstandTheme {
                 return UIColor(red: 0.98, green: 0.95, blue: 0.89, alpha: 1.0)
             }
         )
-
+        
         static let surface = Color(
             uiColor: UIColor { traits in
                 if traits.userInterfaceStyle == .dark {
@@ -61,7 +61,7 @@ enum LampstandTheme {
                 return UIColor(red: 1.00, green: 0.99, blue: 0.97, alpha: 1.0)
             }
         )
-
+        
         static let stroke = Color(
             uiColor: UIColor { traits in
                 if traits.userInterfaceStyle == .dark {
@@ -70,7 +70,7 @@ enum LampstandTheme {
                 return UIColor(white: 0.0, alpha: 0.06)
             }
         )
-
+        
         static let ink = Color(
             uiColor: UIColor { traits in
                 if traits.userInterfaceStyle == .dark {
@@ -79,7 +79,7 @@ enum LampstandTheme {
                 return UIColor(white: 0.12, alpha: 1.0)
             }
         )
-
+        
         static let inkSecondary = Color(
             uiColor: UIColor { traits in
                 if traits.userInterfaceStyle == .dark {
@@ -88,7 +88,7 @@ enum LampstandTheme {
                 return UIColor(white: 0.30, alpha: 1.0)
             }
         )
-
+        
         static let accent = Color(
             uiColor: UIColor { traits in
                 if traits.userInterfaceStyle == .dark {
@@ -97,7 +97,7 @@ enum LampstandTheme {
                 return UIColor(red: 0.74, green: 0.46, blue: 0.14, alpha: 1.0)
             }
         )
-
+        
         static let highlight = Color(
             uiColor: UIColor { traits in
                 if traits.userInterfaceStyle == .dark {
@@ -107,7 +107,7 @@ enum LampstandTheme {
             }
         )
     }
-
+    
     enum Typography {
         static let title: Font = .system(.title3, design: .serif).weight(.semibold)
         static let headline: Font = .system(.headline, design: .serif).weight(.semibold)
@@ -137,7 +137,7 @@ extension View {
     func lampstandScreenBackground() -> some View {
         modifier(LampstandScreenBackground())
     }
-
+    
     func lampstandCard(isHighlighted: Bool = false) -> some View {
         self
             .padding(.vertical, 10)

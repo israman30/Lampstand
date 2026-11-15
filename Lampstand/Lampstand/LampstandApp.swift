@@ -11,6 +11,10 @@ import SwiftUI
 struct LampstandApp: App {
     @AppStorage("lampstand.appearance") private var appearanceRawValue: String = LampstandAppearance.system.rawValue
 
+    init() {
+        LampstandLog.app("App launched", details: "appearance=\(appearanceRawValue)")
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
