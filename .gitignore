@@ -64,3 +64,9 @@ fastlane/test_output
 DerivedData/
 build/
 .cursorDerivedData/
+
+# Build & Derived Data
+.derivedData/
+DerivedData/
+DerivedDataBuild/
+.cursorDerivedData/

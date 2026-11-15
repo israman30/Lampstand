@@ -1,2 +1,0 @@
-Target dependency graph (1 target)
-Target 'Lampstand' in project 'Lampstand' (no dependencies)
