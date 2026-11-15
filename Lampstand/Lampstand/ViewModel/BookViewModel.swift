@@ -129,22 +129,24 @@ final class BookViewModel: ObservableObject {
 
         let cachedVerse = await verseStore.fetchVerse(book: book, chapter: chapter, verse: verse, version: version)
         if let cachedVerse, !Task.isCancelled {
-            verses = [cachedVerse]
-            navigationTitle = "\(cachedVerse.book ?? book) \(chapter):\(verse)"
+            let resolved = cachedVerse.resolvingReferences(book: book, chapter: chapter, verse: verse)
+            verses = [resolved]
+            navigationTitle = "\(resolved.book ?? book) \(resolved.chapter):\(resolved.verse)"
         }
 
         do {
             guard !Task.isCancelled else { return }
             let result = try await networkManager.fetchVerse(book: book, chapter: chapter, verse: verse, version: version)
             guard !Task.isCancelled else { return }
-            verses = [result]
-            if let bookName = result.book {
-                navigationTitle = "\(bookName) \(chapter):\(verse)"
+            let resolved = result.resolvingReferences(book: book, chapter: chapter, verse: verse)
+            verses = [resolved]
+            if let bookName = resolved.book {
+                navigationTitle = "\(bookName) \(resolved.chapter):\(resolved.verse)"
             } else {
                 navigationTitle = titleOverride
             }
 
-            await verseStore.upsert(verse: result, bookFallback: book, version: version)
+            await verseStore.upsert(verse: resolved, bookFallback: book, version: version)
         } catch {
             if cachedVerse == nil {
                 errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription

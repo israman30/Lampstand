@@ -185,4 +185,17 @@ extension Verse {
         self.verse = verse
         self.text = text
     }
+
+    /// Fills book/chapter/verse from the request when the payload omits them.
+    ///
+    /// Per-verse JSON files often include only `verse` and `text` because chapter/book are implied by the URL.
+    func resolvingReferences(book: String, chapter: Int, verse: Int) -> Verse {
+        let trimmedBook = book.trimmingCharacters(in: .whitespacesAndNewlines)
+        return Verse(
+            book: self.book ?? (trimmedBook.isEmpty ? nil : trimmedBook),
+            chapter: self.chapter > 0 ? self.chapter : chapter,
+            verse: self.verse > 0 ? self.verse : verse,
+            text: text
+        )
+    }
 }

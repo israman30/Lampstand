@@ -138,6 +138,24 @@ final class BookViewModelTests: XCTestCase {
         XCTAssertEqual(title, "1 Samuel 3:1")
     }
 
+    func test_networkVerseMissingChapter_resolvesChapterForDisplay() async throws {
+        let fresh = Verse(book: "John", chapter: 0, verse: 16, text: "For God so loved the world...")
+        let network = BookNetworkManagerMock(fetchVerse: { _, _, _, _ in fresh })
+        let store = BookVerseStoreMock(fetchVerse: { _, _, _, _ in nil })
+
+        let sut = BookViewModel(networkManager: network, verseStore: store)
+        sut.bookText = "John"
+        sut.chapterText = "3"
+        sut.verseText = "16"
+
+        let verses = try await waitForVerses(from: sut) { verses in
+            Self.snapshot(verses) == ["John|3|16|For God so loved the world..."]
+        }
+
+        XCTAssertEqual(Self.snapshot(verses), ["John|3|16|For God so loved the world..."])
+        XCTAssertEqual(sut.navigationTitle, "John 3:16")
+    }
+
     func test_versionChange_triggersAnotherFetch() async throws {
         let gate1 = BookAsyncGate()
         let gate2 = BookAsyncGate()

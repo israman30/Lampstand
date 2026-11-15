@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
-    @AppStorage("lampstand.hasSeenWelcome") private var hasSeenWelcome = false
+    @AppStorage("lampstand.hasSeenWelcome")
+    private var hasSeenWelcome = false
 
     var body: some View {
         ZStack {
