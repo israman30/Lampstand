@@ -54,8 +54,8 @@ final class NetworkManager {
     }
 
     func fetchChapter(book: String, chapter: Int, version: String) async throws -> [Verse] {
-        let versionSlug = Self.slugify(version)
-        let bookSlug = Self.slugify(book)
+        let versionSlug = Self.slugifyVersion(version)
+        let bookSlug = Self.slugifyBook(book)
         // Guard early so we never generate malformed URLs like ".../books//chapters/0.json".
         guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0 else {
             LampstandLog.failure("Invalid chapter request", details: "book=\(book) chapter=\(chapter) version=\(version)")
@@ -88,8 +88,8 @@ final class NetworkManager {
     }
 
     func fetchVerse(book: String, chapter: Int, verse: Int, version: String) async throws -> Verse {
-        let versionSlug = Self.slugify(version)
-        let bookSlug = Self.slugify(book)
+        let versionSlug = Self.slugifyVersion(version)
+        let bookSlug = Self.slugifyBook(book)
         guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0, verse > 0 else {
             LampstandLog.failure("Invalid verse request", details: "book=\(book) chapter=\(chapter) verse=\(verse) version=\(version)")
             throw NetworkError.invalidURL
@@ -191,35 +191,41 @@ final class NetworkManager {
         throw NetworkError.unexpectedPayload
     }
 
-    private static func slugify(_ input: String) -> String {
+    private static func slugifyVersion(_ input: String) -> String {
         let lower = input
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
 
         guard !lower.isEmpty else { return "" }
 
-        // The upstream file paths are kebab-case-ish. This keeps URLs predictable for inputs like:
-        // - "1 Samuel" -> "1-samuel"
-        // - "Song of Solomon" -> "song-of-solomon"
-        // It’s intentionally conservative: anything non-alphanumeric becomes a single "-".
-        let allowed = CharacterSet.alphanumerics
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-"))
         var scalars: [UnicodeScalar] = []
         scalars.reserveCapacity(lower.unicodeScalars.count)
 
         var lastWasDash = false
         for scalar in lower.unicodeScalars {
             if allowed.contains(scalar) {
+                if scalar == "-" && lastWasDash { continue }
                 scalars.append(scalar)
-                lastWasDash = false
+                lastWasDash = (scalar == "-")
             } else if !lastWasDash {
-                scalars.append(UnicodeScalar(45)) // "-"
+                scalars.append(UnicodeScalar(45))
                 lastWasDash = true
             }
         }
 
-        let slug = String(String.UnicodeScalarView(scalars))
+        return String(String.UnicodeScalarView(scalars))
             .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+    }
 
-        return slug
+    private static func slugifyBook(_ input: String) -> String {
+        let lower = input
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+
+        guard !lower.isEmpty else { return "" }
+
+        let allowed = CharacterSet.alphanumerics
+        return String(lower.unicodeScalars.filter { allowed.contains($0) })
     }
 }
