@@ -195,6 +195,54 @@ final class BookViewModelTests: XCTestCase {
         XCTAssertEqual(calls, 2)
     }
 
+    func test_bookText_normalizes_numberedBooks_beforeFetching() async throws {
+        let expected = Verse(book: "1 Samuel", chapter: 3, verse: 1, text: "Samuel verse")
+        let network = BookNetworkManagerMock(fetchVerse: { book, chapter, verse, version in
+            XCTAssertEqual(book, "1 Samuel")
+            XCTAssertEqual(chapter, 3)
+            XCTAssertEqual(verse, 1)
+            XCTAssertEqual(version, "en-asv")
+            return expected
+        })
+        let store = BookVerseStoreMock(fetchVerse: { _, _, _, _ in nil })
+
+        let sut = BookViewModel(networkManager: network, verseStore: store)
+        sut.bookText = "1 samuel"
+        sut.chapterText = "3"
+        sut.verseText = "1"
+
+        let verses = try await waitForVerses(from: sut) { verses in
+            Self.snapshot(verses) == ["1 Samuel|3|1|Samuel verse"]
+        }
+
+        XCTAssertEqual(Self.snapshot(verses), ["1 Samuel|3|1|Samuel verse"])
+        XCTAssertEqual(sut.navigationTitle, "1 Samuel 3:1")
+    }
+
+    func test_bookText_normalizes_multiWordBookNames_beforeFetching() async throws {
+        let expected = Verse(book: "Song of Solomon", chapter: 1, verse: 1, text: "Solomon text")
+        let network = BookNetworkManagerMock(fetchVerse: { book, chapter, verse, version in
+            XCTAssertEqual(book, "Song of Solomon")
+            XCTAssertEqual(chapter, 1)
+            XCTAssertEqual(verse, 1)
+            XCTAssertEqual(version, "en-asv")
+            return expected
+        })
+        let store = BookVerseStoreMock(fetchVerse: { _, _, _, _ in nil })
+
+        let sut = BookViewModel(networkManager: network, verseStore: store)
+        sut.bookText = "song of solomon"
+        sut.chapterText = "1"
+        sut.verseText = "1"
+
+        let verses = try await waitForVerses(from: sut) { verses in
+            Self.snapshot(verses) == ["Song of Solomon|1|1|Solomon text"]
+        }
+
+        XCTAssertEqual(Self.snapshot(verses), ["Song of Solomon|1|1|Solomon text"])
+        XCTAssertEqual(sut.navigationTitle, "Song of Solomon 1:1")
+    }
+
     // MARK: - Helpers
 
     private func waitForVerses(
@@ -321,4 +369,3 @@ private actor BookAsyncGate {
         continuations.forEach { $0.resume() }
     }
 }
-
