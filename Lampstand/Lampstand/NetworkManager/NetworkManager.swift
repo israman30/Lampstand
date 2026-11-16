@@ -54,10 +54,13 @@ final class NetworkManager {
     }
 
     func fetchChapter(book: String, chapter: Int, version: String) async throws -> [Verse] {
-        let versionSlug = Self.slugify(version)
-        let bookSlug = Self.slugify(book)
+        let versionSlug = Self.slugifyVersion(version)
+        let bookSlug = Self.slugifyBook(book)
         // Guard early so we never generate malformed URLs like ".../books//chapters/0.json".
-        guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0 else { throw NetworkError.invalidURL }
+        guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0 else {
+            LampstandLog.failure("Invalid chapter request", details: "book=\(book) chapter=\(chapter) version=\(version)")
+            throw NetworkError.invalidURL
+        }
 
         let url = baseURL
             .appendingPathComponent(versionSlug)
@@ -66,23 +69,31 @@ final class NetworkManager {
             .appendingPathComponent("chapters")
             .appendingPathComponent("\(chapter).json")
 
+        LampstandLog.fetch("Fetching chapter", details: "book=\(book) chapter=\(chapter) version=\(version) url=\(url)")
         return try await decodeVerses(from: url)
     }
 
     func fetchChapterPage(book: String, chapter: Int, totalChapters: Int, version: String) async throws -> ChapterPage {
-        guard totalChapters > 0, (1...totalChapters).contains(chapter) else { throw NetworkError.invalidURL }
+        guard totalChapters > 0, (1...totalChapters).contains(chapter) else {
+            LampstandLog.failure("Invalid chapter page request", details: "book=\(book) chapter=\(chapter) totalChapters=\(totalChapters) version=\(version)")
+            throw NetworkError.invalidURL
+        }
 
         let verses = try await fetchChapter(book: book, chapter: chapter, version: version)
         let previous = (chapter > 1) ? (chapter - 1) : nil
         let next = (chapter < totalChapters) ? (chapter + 1) : nil
 
+        LampstandLog.success("Chapter page loaded", details: "book=\(book) chapter=\(chapter) verseCount=\(verses.count)")
         return ChapterPage(book: book, chapter: chapter, verses: verses, previousChapter: previous, nextChapter: next)
     }
 
     func fetchVerse(book: String, chapter: Int, verse: Int, version: String) async throws -> Verse {
-        let versionSlug = Self.slugify(version)
-        let bookSlug = Self.slugify(book)
-        guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0, verse > 0 else { throw NetworkError.invalidURL }
+        let versionSlug = Self.slugifyVersion(version)
+        let bookSlug = Self.slugifyBook(book)
+        guard !versionSlug.isEmpty, !bookSlug.isEmpty, chapter > 0, verse > 0 else {
+            LampstandLog.failure("Invalid verse request", details: "book=\(book) chapter=\(chapter) verse=\(verse) version=\(version)")
+            throw NetworkError.invalidURL
+        }
 
         // Example:
         // https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-asv/books/genesis/chapters/1/verses/1.json
@@ -95,18 +106,24 @@ final class NetworkManager {
             .appendingPathComponent("verses")
             .appendingPathComponent("\(verse).json")
 
+        LampstandLog.query("Querying verse", details: "book=\(book) chapter=\(chapter) verse=\(verse) version=\(version) url=\(url)")
+
         // We use `URLSession.shared` (no auth/cookies) since the content is public, cache-friendly JSON.
         let (data, response) = try await URLSession.shared.data(from: url)
 
         guard let http = response as? HTTPURLResponse else {
+            LampstandLog.failure("Missing HTTP response", details: "url=\(url)")
             throw NetworkError.invalidResponse
         }
         guard (200...299).contains(http.statusCode) else {
+            LampstandLog.failure("HTTP request failed", details: "status=\(http.statusCode) url=\(url)")
             throw NetworkError.httpStatus(http.statusCode)
         }
 
         let decoded = try Self.decodeSingleVerse(from: data)
-        return decoded.resolvingReferences(book: book, chapter: chapter, verse: verse)
+        let resolved = decoded.resolvingReferences(book: book, chapter: chapter, verse: verse)
+        LampstandLog.success("Verse loaded", details: "book=\(book) chapter=\(chapter) verse=\(verse) textPreview=\(String(resolved.text.prefix(64)))")
+        return resolved
     }
 
     private struct VerseWrapper: Decodable {
@@ -137,9 +154,11 @@ final class NetworkManager {
         let (data, response) = try await URLSession.shared.data(from: url)
 
         guard let http = response as? HTTPURLResponse else {
+            LampstandLog.failure("Missing HTTP response while decoding chapter", details: "url=\(url)")
             throw NetworkError.invalidResponse
         }
         guard (200...299).contains(http.statusCode) else {
+            LampstandLog.failure("Chapter request failed", details: "status=\(http.statusCode) url=\(url)")
             throw NetworkError.httpStatus(http.statusCode)
         }
 
@@ -148,12 +167,14 @@ final class NetworkManager {
         // Most common shape for chapters:
         // { ..., "verses": [ { ... }, ... ] }
         if let chapterResponse = try? decoder.decode(ChapterResponse.self, from: data) {
+            LampstandLog.success("Chapter decoded", details: "url=\(url) verseCount=\(chapterResponse.verses.count)")
             return chapterResponse.verses
         }
 
         // Fallback shapes: the dataset may evolve or differ by version/file, so we support a couple of
         // common alternatives to avoid breaking reading/search when a single JSON file differs.
         if let verses = try? decoder.decode([Verse].self, from: data) {
+            LampstandLog.success("Chapter decoded as array", details: "url=\(url) verseCount=\(verses.count)")
             return verses
         }
 
@@ -162,41 +183,49 @@ final class NetworkManager {
         }
         
         if let wrapper = try? decoder.decode(DataWrapper.self, from: data) {
+            LampstandLog.success("Chapter decoded from wrapper", details: "url=\(url) verseCount=\(wrapper.data.count)")
             return wrapper.data
         }
 
+        LampstandLog.failure("Unexpected chapter payload", details: "url=\(url) payloadSize=\(data.count)")
         throw NetworkError.unexpectedPayload
     }
 
-    private static func slugify(_ input: String) -> String {
+    private static func slugifyVersion(_ input: String) -> String {
         let lower = input
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
 
         guard !lower.isEmpty else { return "" }
 
-        // The upstream file paths are kebab-case-ish. This keeps URLs predictable for inputs like:
-        // - "1 Samuel" -> "1-samuel"
-        // - "Song of Solomon" -> "song-of-solomon"
-        // It’s intentionally conservative: anything non-alphanumeric becomes a single "-".
-        let allowed = CharacterSet.alphanumerics
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-"))
         var scalars: [UnicodeScalar] = []
         scalars.reserveCapacity(lower.unicodeScalars.count)
 
         var lastWasDash = false
         for scalar in lower.unicodeScalars {
             if allowed.contains(scalar) {
+                if scalar == "-" && lastWasDash { continue }
                 scalars.append(scalar)
-                lastWasDash = false
+                lastWasDash = (scalar == "-")
             } else if !lastWasDash {
-                scalars.append(UnicodeScalar(45)) // "-"
+                scalars.append(UnicodeScalar(45))
                 lastWasDash = true
             }
         }
 
-        let slug = String(String.UnicodeScalarView(scalars))
+        return String(String.UnicodeScalarView(scalars))
             .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+    }
 
-        return slug
+    private static func slugifyBook(_ input: String) -> String {
+        let lower = input
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+
+        guard !lower.isEmpty else { return "" }
+
+        let allowed = CharacterSet.alphanumerics
+        return String(lower.unicodeScalars.filter { allowed.contains($0) })
     }
 }
