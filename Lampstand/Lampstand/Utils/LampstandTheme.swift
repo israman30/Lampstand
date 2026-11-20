@@ -115,6 +115,7 @@ enum LampstandTheme {
         static let bodyEmphasis: Font = .system(.body, design: .serif).weight(.semibold)
         static let caption: Font = .system(.caption, design: .serif)
         static let verseNumber: Font = .system(.footnote, design: .rounded).weight(.semibold)
+        static let reading: Font = .system(.body, design: .default)
     }
 }
 
@@ -152,4 +153,3 @@ extension View {
             )
     }
 }
-

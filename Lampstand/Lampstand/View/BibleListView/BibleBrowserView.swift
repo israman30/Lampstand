@@ -38,54 +38,53 @@ struct BibleBrowserView: View {
                 .ignoresSafeArea()
 
                 ScrollViewReader { proxy in
-                    List {
-                        // MARK: - Book Version { Picker ["en-asv", "en-kjv"] }
-                        BookVersionPicker(viewModel: viewModel)
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 18) {
+                            BookVersionPicker(viewModel: viewModel)
 
-                        Section {
                             if viewModel.selectedBook == nil {
                                 unavailableContent()
                             } else {
-                                // MARK: - Selected Chapter Header
                                 SelectedChapterHeaderView(viewMode: viewModel, previous: {
                                     viewModel.goToPreviousChapter()
                                 }, next: {
                                     viewModel.goToNextChapter()
                                 })
-                                // Loafing Chapter
+                                .padding(.horizontal, 4)
+
                                 if viewModel.isLoading {
-                                    // MARK: - Loading `Chapter`
                                     LoadingResultView(message: "Loading chapter…")
                                         .lampstandLoadingStatus("Loading chapter", isLoading: true)
-                                }
-                                // MARK: - List Chapters
-                                if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.top, 24)
+                                } else if let message = viewModel.errorMessage, viewModel.verses.isEmpty {
                                     ContentUnavailableView(
                                         "Couldn’t load chapter",
                                         systemImage: "exclamationmark.triangle",
                                         description: Text(message)
                                     )
+                                    .padding(.top, 24)
                                 } else {
-                                    ForEach(viewModel.verses, id: \.id) { verse in
-                                        VerseRow(
-                                            bookName: viewModel.selectedBook?.name,
-                                            chapter: viewModel.selectedChapter,
-                                            verseNumber: verse.verse,
-                                            text: verse.text,
-                                            isHighlighted: highlightedVerse == verse.verse
-                                        )
-                                        .id(verse.verse)
-                                        .listRowInsets(
-                                            EdgeInsets(top: 6, leading: 5, bottom: 6, trailing: 5)
-                                        )
-                                        .listRowBackground(Color.clear)
-                                        .listRowSeparator(.hidden)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        ForEach(viewModel.verses, id: \.id) { verse in
+                                            VerseRow(
+                                                bookName: viewModel.selectedBook?.name,
+                                                chapter: viewModel.selectedChapter,
+                                                verseNumber: verse.verse,
+                                                text: verse.text,
+                                                isHighlighted: highlightedVerse == verse.verse
+                                            )
+                                            .id(verse.verse)
+                                        }
                                     }
+                                    .padding(.horizontal, 0)
+                                    .padding(.bottom, 32)
                                 }
                             }
                         }
+                        .padding(.horizontal, 8)
+                        .padding(.top, 10)
                     }
-                    .listStyle(.insetGrouped)
                     .scrollContentBackground(.hidden)
                     .accessibilityRotor("Verses") {
                         ForEach(viewModel.verses, id: \.id) { verse in
@@ -100,11 +99,9 @@ struct BibleBrowserView: View {
                         guard let target = pendingScrollToVerse else { return }
                         pendingScrollToVerse = nil
                         highlightedVerse = target
-                        // The list needs a beat to lay out new rows before ScrollViewReader can reliably scroll to them.
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                             scrollToVerse(target, proxy: proxy)
                         }
-                        // Highlight is intentionally temporary—enough to orient the user, without staying “stuck on.”
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                             if highlightedVerse == target {
                                 highlightedVerse = nil
@@ -154,6 +151,32 @@ struct BibleBrowserView: View {
                         Image(systemName: "slider.horizontal.3")
                     }
                     .lampstandSettingsMenuLabel()
+                }
+
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Button {
+                        viewModel.goToPreviousChapter()
+                    } label: {
+                        Label("Previous", systemImage: "chevron.left")
+                    }
+                    .disabled(viewModel.selectedChapter <= viewModel.chapterRange.lowerBound)
+
+                    Spacer()
+
+                    Text("\(viewModel.selectedBook?.name ?? "Lampstand") · Chapter \(viewModel.selectedChapter)")
+                        .font(LampstandTheme.Typography.caption)
+                        .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    Button {
+                        viewModel.goToNextChapter()
+                    } label: {
+                        Label("Next", systemImage: "chevron.right")
+                    }
+                    .labelStyle(.titleAndIcon)
+                    .disabled(viewModel.selectedChapter >= viewModel.chapterRange.upperBound)
                 }
             }
             .toolbarBackground(.visible, for: .navigationBar)
@@ -214,5 +237,3 @@ struct BibleBrowserView_Previews: PreviewProvider {
     }
 }
 #endif
-
-

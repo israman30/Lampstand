@@ -24,10 +24,13 @@ struct SelectedChapterHeaderView: View {
             Button {
                 previous()
             } label: {
-                Label("Previous", systemImage: "chevron.left")
-                    .labelStyle(.iconOnly)
-                    .imageScale(.medium)
+                Image(systemName: "chevron.left")
+                    .font(.system(.body, weight: .semibold))
+                    .frame(width: 38, height: 38)
             }
+            .buttonStyle(.plain)
+            .background(Circle().fill(LampstandTheme.Palette.surface))
+            .overlay(Circle().stroke(LampstandTheme.Palette.stroke, lineWidth: 1))
             .disabled(viewModel.selectedChapter <= viewModel.chapterRange.lowerBound)
             .accessibilityLabel("Previous chapter")
             .accessibilityHint(
@@ -38,23 +41,32 @@ struct SelectedChapterHeaderView: View {
 
             Spacer()
 
-            Text("Chapter \(viewModel.selectedChapter)")
-                .font(LampstandTheme.Typography.title)
-                .foregroundStyle(LampstandTheme.Palette.ink)
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityLabel(
-                    "Chapter \(viewModel.selectedChapter) of \(viewModel.selectedBook?.name ?? "")"
-                )
+            VStack(spacing: 2) {
+                Text(viewModel.selectedBook?.name ?? "Lampstand")
+                    .font(LampstandTheme.Typography.caption)
+                    .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+
+                Text("Chapter \(viewModel.selectedChapter)")
+                    .font(LampstandTheme.Typography.title)
+                    .foregroundStyle(LampstandTheme.Palette.ink)
+            }
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityLabel(
+                "Chapter \(viewModel.selectedChapter) of \(viewModel.selectedBook?.name ?? "")"
+            )
 
             Spacer()
 
             Button {
                 next()
             } label: {
-                Label("Next", systemImage: "chevron.right")
-                    .labelStyle(.iconOnly)
-                    .imageScale(.medium)
+                Image(systemName: "chevron.right")
+                    .font(.system(.body, weight: .semibold))
+                    .frame(width: 38, height: 38)
             }
+            .buttonStyle(.plain)
+            .background(Circle().fill(LampstandTheme.Palette.surface))
+            .overlay(Circle().stroke(LampstandTheme.Palette.stroke, lineWidth: 1))
             .disabled(viewModel.selectedChapter >= viewModel.chapterRange.upperBound)
             .accessibilityLabel("Next chapter")
             .accessibilityHint(
@@ -63,7 +75,16 @@ struct SelectedChapterHeaderView: View {
                     : "Already at the last chapter"
             )
         }
-        .buttonStyle(.borderedProminent)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(LampstandTheme.Palette.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(LampstandTheme.Palette.stroke, lineWidth: 1)
+        )
     }
 }
 
