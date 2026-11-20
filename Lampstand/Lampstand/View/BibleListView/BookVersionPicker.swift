@@ -28,6 +28,8 @@ struct BookVersionPicker: View {
         } footer: {
             if let selected = viewModel.selectedBook {
                 selectedBook(book: selected)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 8)
             }
         }
     }

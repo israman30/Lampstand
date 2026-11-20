@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ · Chapter %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Chapter %2$lld"
+          }
+        }
+      }
+    },
     "%@ %lld:%lld" : {
       "localizations" : {
         "en" : {

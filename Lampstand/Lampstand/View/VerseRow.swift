@@ -17,26 +17,35 @@ struct VerseRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text("\(verseNumber)")
-                .verseTextStyle(
-                    font: LampstandTheme.Typography.verseNumber,
-                    color: LampstandTheme.Palette.inkSecondary
-                )
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    Capsule()
-                        .fill(LampstandTheme.Palette.stroke.opacity(0.9))
-                )
+                .font(.system(.caption, design: .rounded).weight(.bold))
+                .foregroundStyle(isHighlighted ? LampstandTheme.Palette.accent : LampstandTheme.Palette.inkSecondary)
+                .frame(minWidth: 24, alignment: .trailing)
                 .accessibilityHidden(true)
 
             Text(text)
                 .verseTextStyle(
-                    font: LampstandTheme.Typography.body,
-                    color: LampstandTheme.Palette.ink
+                    font: LampstandTheme.Typography.reading,
+                    color: LampstandTheme.Palette.ink,
+                    spacing: 5
                 )
                 .textSelection(.enabled)
         }
-        .lampstandCard(isHighlighted: isHighlighted)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 7)
+        .padding(.horizontal, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(
+                    isHighlighted
+                        ? LampstandTheme.Palette.highlight
+                        : LampstandTheme.Palette.surface.opacity(0.72)
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(LampstandTheme.Palette.stroke, lineWidth: 0.8)
+        )
+        .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
             LampstandAccessibility.verseLabel(
