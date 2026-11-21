@@ -29,19 +29,31 @@ struct VerseSelectionView: View {
                     .accessibilityLabel("Selected book: \(viewModel.bookText)")
             }
 
-            TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
-                .keyboardType(.numberPad)
-                .disabled(!viewModel.chapterEnabled)
-                .submitLabel(.next)
-                .accessibilityLabel("Chapter")
-                .accessibilityHint("Enter the chapter number")
+            TextField(
+                "Chapter (e.g. 3)",
+                text: Binding(
+                    get: { viewModel.chapterText },
+                    set: { viewModel.updateChapter($0) }
+                )
+            )
+            .keyboardType(.numberPad)
+            .disabled(!viewModel.chapterEnabled)
+            .submitLabel(.next)
+            .accessibilityLabel("Chapter")
+            .accessibilityHint("Enter the chapter number")
 
-            TextField("Verse (e.g. 16)", text: $viewModel.verseText)
-                .keyboardType(.numberPad)
-                .disabled(!viewModel.verseEnabled)
-                .submitLabel(.search)
-                .accessibilityLabel("Verse")
-                .accessibilityHint("Enter the verse number")
+            TextField(
+                "Verse (e.g. 16)",
+                text: Binding(
+                    get: { viewModel.verseText },
+                    set: { viewModel.updateVerse($0) }
+                )
+            )
+            .keyboardType(.numberPad)
+            .disabled(!viewModel.verseEnabled)
+            .submitLabel(.search)
+            .accessibilityLabel("Verse")
+            .accessibilityHint("Enter the verse number")
 
             if let message = viewModel.searchValidationMessage {
                 Label(message, systemImage: "exclamationmark.circle.fill")

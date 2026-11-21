@@ -32,6 +32,7 @@ final class BookViewModel: ObservableObject {
     // We cancel in-flight work on any input change to avoid racing updates (e.g., the user types “1”, then “16”)
     // and to ensure only the latest (book, chapter, verse, version) selection can win.
     private var activeFetchTask: Task<Void, Never>?
+    private var verseDebounceTask: Task<Void, Never>?
     private var isInitializing = false
 
     private enum BibleBooks: String, CaseIterable {
@@ -150,57 +151,6 @@ final class BookViewModel: ObservableObject {
                 self.isLoading = false
                 self.navigationTitle = book.isEmpty ? "Lampstand" : Self.prettyBookName(book)
                 self.updateSearchValidationMessage()
-            }
-            .store(in: &cancellables)
-
-        $chapterText
-            .map(Self.sanitizeNumberText(_:))
-            .removeDuplicates()
-            .sink { [weak self] sanitized in
-                guard let self, !self.isInitializing else { return }
-                if self.chapterText != sanitized {
-                    self.chapterText = sanitized
-                    return
-                }
-
-                self.activeFetchTask?.cancel()
-                self.verseText = ""
-                self.verses = []
-                self.errorMessage = nil
-                self.isLoading = false
-
-                let book = Self.prettyBookName(self.bookText)
-                if let chapter = Int(sanitized), chapter > 0 {
-                    self.navigationTitle = "\(book) \(chapter)"
-                } else {
-                    self.navigationTitle = book.isEmpty ? "Lampstand" : book
-                }
-                self.updateSearchValidationMessage()
-            }
-            .store(in: &cancellables)
-
-        $verseText
-            .map(Self.sanitizeNumberText(_:))
-            .removeDuplicates()
-            // Small debounce keeps the UI responsive while preventing a network request per keystroke.
-            .debounce(for: .milliseconds(350), scheduler: RunLoop.main)
-            .sink { [weak self] sanitized in
-                guard let self, !self.isInitializing else { return }
-                if self.verseText != sanitized {
-                    self.verseText = sanitized
-                    return
-                }
-
-                self.errorMessage = nil
-                self.verses = []
-                self.isLoading = false
-
-                let book = Self.prettyBookName(self.bookText)
-                if let chapter = Int(self.chapterText), chapter > 0,
-                   let verse = Int(sanitized), verse > 0 {
-                    self.navigationTitle = "\(book) \(chapter):\(verse)"
-                }
-                self.triggerFetchIfPossible()
             }
             .store(in: &cancellables)
 
@@ -415,6 +365,56 @@ final class BookViewModel: ObservableObject {
 
         if verse != nil {
             triggerFetchIfPossible()
+        }
+    }
+
+    func updateChapter(_ input: String) {
+        let sanitized = Self.sanitizeNumberText(input)
+        guard chapterText != sanitized else { return }
+
+        activeFetchTask?.cancel()
+        chapterText = sanitized
+        verseText = ""
+        verses = []
+        errorMessage = nil
+        isLoading = false
+
+        let book = Self.prettyBookName(bookText)
+        if let chapter = Int(sanitized), chapter > 0 {
+            navigationTitle = "\(book) \(chapter)"
+        } else {
+            navigationTitle = book.isEmpty ? "Lampstand" : book
+        }
+
+        updateSearchValidationMessage()
+    }
+
+    func updateVerse(_ input: String) {
+        let sanitized = Self.sanitizeNumberText(input)
+        guard verseText != sanitized else { return }
+
+        verseDebounceTask?.cancel()
+        verseText = sanitized
+        verses = []
+        errorMessage = nil
+        isLoading = false
+
+        let book = Self.prettyBookName(bookText)
+        if let chapter = Int(chapterText), chapter > 0,
+           let verse = Int(sanitized), verse > 0 {
+            navigationTitle = "\(book) \(chapter):\(verse)"
+        } else {
+            navigationTitle = book.isEmpty ? "Lampstand" : "\(book) \(chapterText)"
+        }
+
+        guard !sanitized.isEmpty else { return }
+
+        verseDebounceTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                self?.triggerFetchIfPossible()
+            }
         }
     }
 }
