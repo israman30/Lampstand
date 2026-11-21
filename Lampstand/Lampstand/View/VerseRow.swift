@@ -7,12 +7,28 @@
 
 import SwiftUI
 
+/// Displays one verse with a context-specific bookmark toggle.
+///
+/// The bookmark button uses the selected Bible version as part of the saved
+/// reference, so saving the same verse in ASV and KJV creates distinct entries.
 struct VerseRow: View {
     let bookName: String?
     let chapter: Int
     let verseNumber: Int
     let text: String
     let isHighlighted: Bool
+    let isBookmarked: Bool
+    let onToggleBookmark: () -> Void
+
+    init(bookName: String?, chapter: Int, verseNumber: Int, text: String, isHighlighted: Bool, isBookmarked: Bool = false, onToggleBookmark: @escaping () -> Void = {}) {
+        self.bookName = bookName
+        self.chapter = chapter
+        self.verseNumber = verseNumber
+        self.text = text
+        self.isHighlighted = isHighlighted
+        self.isBookmarked = isBookmarked
+        self.onToggleBookmark = onToggleBookmark
+    }
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -29,6 +45,14 @@ struct VerseRow: View {
                     spacing: 5
                 )
                 .textSelection(.enabled)
+            Spacer()
+            Button(action: onToggleBookmark) {
+                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                    .foregroundStyle(isBookmarked ? LampstandTheme.Palette.accent : LampstandTheme.Palette.inkSecondary)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Bookmark verse")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 7)

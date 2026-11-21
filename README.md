@@ -9,6 +9,7 @@ Lampstand is a small **iOS Bible reader + verse search** app built with **SwiftU
 - **Versions**: switch between supported versions (currently `en-asv` and `en-kjv`).
 - **Offline-friendly feel**: chapters/verses are cached locally so previously-read content shows instantly.
 - **Appearance**: system / light / dark mode (persisted via `@AppStorage`).
+- **Bookmarks**: save verses locally, navigate to them later, and remove them with a swipe or delete action.
 
 ### Technologies
 
@@ -45,6 +46,17 @@ Both follow the same pattern:
 - Decoding is intentionally defensive because payload shapes can vary:
   - Chapters usually decode from `{ "verses": [...] }`, with fallbacks for a few alternate shapes.
   - A verse endpoint may return a plain `Verse` or a small wrapper object.
+
+#### Local persistence: bookmarks in UserDefaults
+
+Bookmarks are stored separately from the Core Data verse cache:
+
+- `BookmarkStore` owns the local bookmark collection and publishes changes to SwiftUI.
+- `BibleBookmark` stores book, chapter, verse, text, translation, and creation date.
+- The stable identity is `version|book|chapter|verse`, preventing duplicate bookmarks for a reference.
+- `UserDefaults` key `lampstand.bookmarks` contains JSON-encoded bookmark data.
+- Verse rows toggle bookmarks; the bookmarks sheet supports navigation and removal.
+- Adding or removing a bookmark updates only local device preferences.
 
 #### Persistence: Core Data cache, defined in code
 
