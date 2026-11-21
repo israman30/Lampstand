@@ -8,28 +8,49 @@
 import SwiftUI
 
 struct VerseSelectionView: View {
-    @State var viewModel: BookViewModel
+    @ObservedObject var viewModel: BookViewModel
+
     var body: some View {
-        Picker("Book", selection: $viewModel.bookText) {
-            Text("Select a book").tag("")
-            ForEach(viewModel.availableBooks, id: \.self) { book in
-                Text(book).tag(book)
+        Section("Search Verse") {
+            Picker("Book", selection: $viewModel.bookText) {
+                Text("Select a book").tag("")
+                ForEach(viewModel.availableBooks, id: \.self) { book in
+                    Text(book).tag(book)
+                }
+            }
+            .pickerStyle(.menu)
+            .accessibilityHint("Choose the Bible book to search")
+
+            if !viewModel.bookText.isEmpty {
+                Text(viewModel.bookText)
+                    .font(LampstandTheme.Typography.caption)
+                    .foregroundStyle(LampstandTheme.Palette.inkSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityLabel("Selected book: \(viewModel.bookText)")
+            }
+
+            TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
+                .keyboardType(.numberPad)
+                .disabled(!viewModel.chapterEnabled)
+                .submitLabel(.next)
+                .accessibilityLabel("Chapter")
+                .accessibilityHint("Enter the chapter number")
+
+            TextField("Verse (e.g. 16)", text: $viewModel.verseText)
+                .keyboardType(.numberPad)
+                .disabled(!viewModel.verseEnabled)
+                .submitLabel(.search)
+                .accessibilityLabel("Verse")
+                .accessibilityHint("Enter the verse number")
+
+            if let message = viewModel.searchValidationMessage {
+                Label(message, systemImage: "exclamationmark.circle.fill")
+                    .font(LampstandTheme.Typography.caption)
+                    .foregroundStyle(LampstandTheme.Palette.accent)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityLabel(message)
             }
         }
-        .pickerStyle(.menu)
-        .accessibilityHint("Choose the Bible book to search")
-
-        TextField("Chapter (e.g. 3)", text: $viewModel.chapterText)
-            .keyboardType(.numberPad)
-            .disabled(!viewModel.chapterEnabled)
-            .accessibilityLabel("Chapter")
-            .accessibilityHint("Enter the chapter number")
-
-        TextField("Verse (e.g. 16)", text: $viewModel.verseText)
-            .keyboardType(.numberPad)
-            .disabled(!viewModel.verseEnabled)
-            .accessibilityLabel("Verse")
-            .accessibilityHint("Enter the verse number")
     }
 }
 

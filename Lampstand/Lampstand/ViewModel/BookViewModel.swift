@@ -24,13 +24,15 @@ final class BookViewModel: ObservableObject {
     @Published var verseText: String = ""
     @Published var version: String = "en-asv"
     @Published private(set) var navigationTitle: String = "Lampstand"
-    
+    @Published private(set) var searchValidationMessage: String?
+
     private let networkManager: NetworkManagerProtocol
     private let verseStore: VerseStoreProtocol
     private var cancellables = Set<AnyCancellable>()
     // We cancel in-flight work on any input change to avoid racing updates (e.g., the user types “1”, then “16”)
     // and to ensure only the latest (book, chapter, verse, version) selection can win.
     private var activeFetchTask: Task<Void, Never>?
+    private var isInitializing = false
 
     private enum BibleBooks: String, CaseIterable {
         case genesis = "Genesis"
@@ -138,15 +140,16 @@ final class BookViewModel: ObservableObject {
         $bookText
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .removeDuplicates()
-            .sink { [weak self] _ in
-                guard let self else { return }
+            .sink { [weak self] book in
+                guard let self, !self.isInitializing else { return }
                 self.activeFetchTask?.cancel()
                 self.chapterText = ""
                 self.verseText = ""
                 self.verses = []
                 self.errorMessage = nil
                 self.isLoading = false
-                self.navigationTitle = "Lampstand"
+                self.navigationTitle = book.isEmpty ? "Lampstand" : Self.prettyBookName(book)
+                self.updateSearchValidationMessage()
             }
             .store(in: &cancellables)
 
@@ -154,7 +157,7 @@ final class BookViewModel: ObservableObject {
             .map(Self.sanitizeNumberText(_:))
             .removeDuplicates()
             .sink { [weak self] sanitized in
-                guard let self else { return }
+                guard let self, !self.isInitializing else { return }
                 if self.chapterText != sanitized {
                     self.chapterText = sanitized
                     return
@@ -165,6 +168,14 @@ final class BookViewModel: ObservableObject {
                 self.verses = []
                 self.errorMessage = nil
                 self.isLoading = false
+
+                let book = Self.prettyBookName(self.bookText)
+                if let chapter = Int(sanitized), chapter > 0 {
+                    self.navigationTitle = "\(book) \(chapter)"
+                } else {
+                    self.navigationTitle = book.isEmpty ? "Lampstand" : book
+                }
+                self.updateSearchValidationMessage()
             }
             .store(in: &cancellables)
 
@@ -174,7 +185,7 @@ final class BookViewModel: ObservableObject {
             // Small debounce keeps the UI responsive while preventing a network request per keystroke.
             .debounce(for: .milliseconds(350), scheduler: RunLoop.main)
             .sink { [weak self] sanitized in
-                guard let self else { return }
+                guard let self, !self.isInitializing else { return }
                 if self.verseText != sanitized {
                     self.verseText = sanitized
                     return
@@ -183,6 +194,12 @@ final class BookViewModel: ObservableObject {
                 self.errorMessage = nil
                 self.verses = []
                 self.isLoading = false
+
+                let book = Self.prettyBookName(self.bookText)
+                if let chapter = Int(self.chapterText), chapter > 0,
+                   let verse = Int(sanitized), verse > 0 {
+                    self.navigationTitle = "\(book) \(chapter):\(verse)"
+                }
                 self.triggerFetchIfPossible()
             }
             .store(in: &cancellables)
@@ -191,7 +208,7 @@ final class BookViewModel: ObservableObject {
             .removeDuplicates()
             .dropFirst()
             .sink { [weak self] _ in
-                guard let self else { return }
+                guard let self, !self.isInitializing else { return }
                 self.triggerFetchIfPossible()
             }
             .store(in: &cancellables)
@@ -204,6 +221,32 @@ final class BookViewModel: ObservableObject {
         // Book + Chapter + Verse before fetching.
     }
 
+    var selectedBookChapterCount: Int? {
+        let canonical = Self.resolveBookName(bookText)
+        return BibleBookCatalog.all.first(where: { $0.name == canonical })?.chapterCount
+    }
+
+    var selectedChapterIsValid: Bool {
+        guard let chapter = Int(chapterText), chapter > 0 else { return false }
+        guard let chapterCount = selectedBookChapterCount else { return true }
+        return chapter <= chapterCount
+    }
+
+    private func updateSearchValidationMessage() {
+        guard let chapterCount = selectedBookChapterCount else {
+            searchValidationMessage = nil
+            return
+        }
+
+        let book = Self.prettyBookName(bookText)
+        if let chapter = Int(chapterText), chapter > 0, chapter > chapterCount {
+            searchValidationMessage = "\(book) has only \(chapterCount) chapter\(chapterCount == 1 ? "" : "s"). Choose a chapter from 1 to \(chapterCount)."
+            return
+        }
+
+        searchValidationMessage = nil
+    }
+
     private func triggerFetchIfPossible() {
         activeFetchTask?.cancel()
 
@@ -211,6 +254,13 @@ final class BookViewModel: ObservableObject {
         guard !rawBook.isEmpty else { return }
         guard let chapter = Int(chapterText), chapter > 0 else { return }
         guard let verse = Int(verseText), verse > 0 else { return }
+
+        updateSearchValidationMessage()
+        guard selectedChapterIsValid else {
+            verses = []
+            errorMessage = nil
+            return
+        }
 
         let book = Self.resolveBookName(rawBook) ?? rawBook
         let titleOverride = "\(Self.prettyBookName(book)) \(chapter):\(verse)"
@@ -228,6 +278,30 @@ final class BookViewModel: ObservableObject {
         errorMessage = nil
 
         let canonicalBook = Self.resolveBookName(book) ?? book
+
+        // Validate the verse against the chapter's actual loaded data. This also
+        // handles chapter-specific verse counts that cannot be inferred from the book name.
+        do {
+            let chapterVerses = try await networkManager.fetchChapter(
+                book: canonicalBook,
+                chapter: chapter,
+                version: version
+            )
+            guard !Task.isCancelled else { return }
+
+            if verse > chapterVerses.count {
+                searchValidationMessage = "\(Self.prettyBookName(canonicalBook)) \(chapter) has only \(chapterVerses.count) verse\(chapterVerses.count == 1 ? "" : "s"). Choose a verse from 1 to \(chapterVerses.count)."
+                verses = []
+                return
+            }
+        } catch {
+            // If chapter probing fails (for example, a test/mock or unavailable network),
+            // preserve the existing single-verse fetch and let that endpoint report the result.
+        }
+
+        searchValidationMessage = nil
+        errorMessage = nil
+
         let cachedVerse = await verseStore.fetchVerse(book: canonicalBook, chapter: chapter, verse: verse, version: version)
         if let cachedVerse, !Task.isCancelled {
             let resolved = cachedVerse.resolvingReferences(book: canonicalBook, chapter: chapter, verse: verse)
@@ -314,5 +388,33 @@ final class BookViewModel: ObservableObject {
                 return token.prefix(1).uppercased() + token.dropFirst().lowercased()
             }
         return tokens.joined(separator: " ")
+    }
+
+    /// Applies preselected search values as one transaction instead of triggering
+    /// independent reset behavior for book, chapter, and verse publications.
+    func configure(book: String, chapter: Int, verse: Int?, version: String) {
+        isInitializing = true
+        activeFetchTask?.cancel()
+
+        bookText = book
+        chapterText = chapter > 0 ? String(chapter) : ""
+        verseText = verse.map(String.init) ?? ""
+        self.version = version
+
+        let canonicalBook = Self.prettyBookName(book)
+        if !canonicalBook.isEmpty, chapter > 0, let selectedVerse = verse, selectedVerse > 0 {
+            navigationTitle = "\(canonicalBook) \(chapter):\(selectedVerse)"
+        } else if !canonicalBook.isEmpty, chapter > 0 {
+            navigationTitle = "\(canonicalBook) \(chapter)"
+        } else {
+            navigationTitle = canonicalBook.isEmpty ? "Lampstand" : canonicalBook
+        }
+
+        isInitializing = false
+        updateSearchValidationMessage()
+
+        if verse != nil {
+            triggerFetchIfPossible()
+        }
     }
 }
