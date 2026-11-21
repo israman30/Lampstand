@@ -10,6 +10,7 @@ import SwiftUI
 struct SearchBookView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: BookViewModel
+    @ObservedObject private var bookmarkStore = BookmarkStore.shared
     private let versions = ["en-asv", "en-kjv"]
     private let onOpenInReader: (_ book: String, _ chapter: Int, _ verse: Int, _ version: String) -> Void
     @AppStorage("lampstand.appearance")
@@ -25,10 +26,12 @@ struct SearchBookView: View {
         onOpenInReader: @escaping (_ book: String, _ chapter: Int, _ verse: Int, _ version: String) -> Void = { _, _, _, _ in }
     ) {
         let viewModel = BookViewModel(networkManager: networkManager, verseStore: verseStore)
-        viewModel.bookText = initialBook
-        viewModel.chapterText = initialChapter > 0 ? String(initialChapter) : ""
-        viewModel.verseText = initialVerse.map(String.init) ?? ""
-        viewModel.version = initialVersion
+        viewModel.configure(
+            book: initialBook,
+            chapter: initialChapter,
+            verse: initialVerse,
+            version: initialVersion
+        )
         self._viewModel = StateObject(wrappedValue: viewModel)
         self.onOpenInReader = onOpenInReader
     }
@@ -59,7 +62,11 @@ struct SearchBookView: View {
                         viewModel.displayedVerse == nil {
                         ErrorResultView(with: "Couldn’t load", icon: "exclamationmark.triangle", message: message)
                     } else if let verse = viewModel.displayedVerse {
-                        VerseResultView(viewModel: viewModel, verse: verse)
+                        VerseResultView(
+                            viewModel: viewModel,
+                            bookmarkStore: bookmarkStore,
+                            verse: verse
+                        )
                     } else {
                         ContentUnavailableView(
                             viewModel.placeholderTitle,
@@ -76,10 +83,31 @@ struct SearchBookView: View {
                             onOpenInReader(book, verse.chapter, verse.verse, viewModel.version)
                             dismiss()
                         } label: {
-                            Label("Open in Reader", systemImage: "book")
-                                .font(LampstandTheme.Typography.bodyEmphasis)
+                            HStack(spacing: 12) {
+                                Image(systemName: "book.fill")
+                                    .font(.system(.title3, weight: .semibold))
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Open in Reader")
+                                        .font(LampstandTheme.Typography.bodyEmphasis)
+                                    Text("\(verse.book ?? viewModel.bookText) \(verse.chapter):\(verse.verse)")
+                                        .font(LampstandTheme.Typography.caption)
+                                        .opacity(0.82)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.system(.caption, weight: .bold))
+                                    .opacity(0.75)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
                         }
                         .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.roundedRectangle(radius: 14))
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity)
                         .accessibilityHint("Opens this verse in the main Bible reader")
                     }
                 }
@@ -150,7 +178,3 @@ struct SearchBookView_Previews: PreviewProvider {
     }
 }
 #endif
-
-
-
-
