@@ -13,7 +13,9 @@ struct BibleBrowserView: View {
     @State private var isShowingSearch = false
     @State private var pendingScrollToVerse: Int?
     @State private var highlightedVerse: Int?
-    
+    @State private var isShowingBookmarks = false
+    @ObservedObject private var bookmarkStore = BookmarkStore.shared
+
     @AppStorage("lampstand.appearance")
     private var appearanceRawValue: String = LampstandAppearance.system.rawValue
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -72,7 +74,25 @@ struct BibleBrowserView: View {
                                                 chapter: viewModel.selectedChapter,
                                                 verseNumber: verse.verse,
                                                 text: verse.text,
-                                                isHighlighted: highlightedVerse == verse.verse
+                                                isHighlighted: highlightedVerse == verse.verse,
+                                                isBookmarked: bookmarkStore.isBookmarked(
+                                                    book: viewModel.selectedBook?.name ?? "",
+                                                    chapter: viewModel.selectedChapter,
+                                                    verse: verse.verse,
+                                                    version: viewModel.version
+                                                ),
+                                                onToggleBookmark: {
+                                                    guard let book = viewModel.selectedBook?.name else { return }
+                                                    bookmarkStore.toggle(
+                                                        BibleBookmark(
+                                                            book: book,
+                                                            chapter: viewModel.selectedChapter,
+                                                            verse: verse.verse,
+                                                            text: verse.text,
+                                                            version: viewModel.version
+                                                        )
+                                                    )
+                                                }
                                             )
                                             .id(verse.verse)
                                         }
@@ -178,6 +198,16 @@ struct BibleBrowserView: View {
                     .labelStyle(.titleAndIcon)
                     .disabled(viewModel.selectedChapter >= viewModel.chapterRange.upperBound)
                 }
+
+                ToolbarItem(placement: .bottomBar) {
+                    Button {
+                        isShowingBookmarks.toggle()
+                    } label: {
+                        Label("Bookmarks", systemImage: "bookmark")
+                    }
+                    .accessibilityLabel("Bookmarks")
+                    .accessibilityHint("View and navigate to your saved verses")
+                }
             }
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(LampstandTheme.Palette.parchment, for: .navigationBar)
@@ -207,6 +237,16 @@ struct BibleBrowserView: View {
                     viewModel.navigateTo(bookName: book, chapter: chapter, version: version)
                     pendingScrollToVerse = verse
                 }
+            }
+        }
+        .sheet(isPresented: $isShowingBookmarks) {
+            BookmarksView(store: bookmarkStore) { bookmark in
+                viewModel.navigateTo(
+                    bookName: bookmark.book,
+                    chapter: bookmark.chapter,
+                    version: bookmark.version
+                )
+                pendingScrollToVerse = bookmark.verse
             }
         }
     }
