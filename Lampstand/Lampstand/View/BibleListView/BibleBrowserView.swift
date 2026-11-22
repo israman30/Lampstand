@@ -41,7 +41,7 @@ struct BibleBrowserView: View {
 
                 ScrollViewReader { proxy in
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 18) {
+                        VStack(alignment: .leading) {
                             BookVersionPicker(viewModel: viewModel)
 
                             if viewModel.selectedBook == nil {
